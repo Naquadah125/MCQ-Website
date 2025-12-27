@@ -6,12 +6,11 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        {/* Logo */}
         <div className="navbar-logo">
-          <Link to="/">QuizMaster</Link>
+          <Link to="/">Quizzing</Link>
         </div>
 
-        {/* Menu bên trái */}
+        {/* Nagivate bar ở trên */}
         <ul className="navbar-menu">
           <li>
             <Link to="/quiz" className="nav-link">
@@ -24,8 +23,8 @@ function Navbar() {
             </Link>
           </li>
           <li>
-            <Link to="/partners" className="nav-link">
-              Đối tác
+            <Link to="/history" className="nav-link">
+              Lịch sủ
             </Link>
           </li>
           <li>
