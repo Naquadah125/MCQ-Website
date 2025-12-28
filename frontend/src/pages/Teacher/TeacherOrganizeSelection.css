@@ -1,0 +1,86 @@
+.selection-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.selection-header h1 {
+  font-size: 32px;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.selection-header p {
+  color: #666;
+  margin-bottom: 40px;
+}
+
+.selection-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.selection-card {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.selection-card:not(.disabled):hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-color: #00b894;
+}
+
+.card-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.selection-card h3 {
+  font-size: 20px;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+.selection-card p {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 25px;
+  height: 42px;
+}
+
+.btn-select {
+  padding: 10px 24px;
+  background-color: #00b894;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-select:hover {
+  background-color: #008f72;
+}
+
+.selection-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-select.secondary {
+  background-color: #f0f0f0;
+  color: #666;
+}

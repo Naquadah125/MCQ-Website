@@ -16,7 +16,8 @@ function TeacherNavbar() {
   }, []);
 
   const isActive = (path) => {
-    return location.pathname === path ? 'teacher-nav-link active' : 'teacher-nav-link';
+    // Active khi đường dẫn bắt đầu bằng /teacher/create
+    return location.pathname.startsWith('/teacher/create') ? 'teacher-nav-link active' : 'teacher-nav-link';
   };
 
   const handleLogout = () => {
@@ -34,18 +35,18 @@ function TeacherNavbar() {
 
         <ul className="teacher-navbar-menu">
           <li>
-            <Link to="/teacher" className={isActive('/teacher')}>
+            <Link to="/teacher" className={location.pathname === '/teacher' ? 'teacher-nav-link active' : 'teacher-nav-link'}>
               Tổng quan
             </Link>
           </li>
           <li>
-            <Link to="/teacher/organize" className={isActive('/teacher/organize')}>
+            <Link to="/teacher/organize" className={location.pathname === '/teacher/organize' ? 'teacher-nav-link active' : 'teacher-nav-link'}>
               Tổ chức thi
             </Link>
           </li>
           <li>
             <Link to="/teacher/create" className={isActive('/teacher/create')}>
-              Tạo bài thi
+              Tạo mới
             </Link>
           </li>
         </ul>

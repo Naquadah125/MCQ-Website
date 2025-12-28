@@ -1,0 +1,149 @@
+.student-exams-page {
+  background-color: #f4f7f6;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 50px;
+  color: #666;
+}
+
+.exams-container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.exams-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.exams-header h2 {
+  font-size: 24px;
+  color: #1a202c;
+  margin: 0;
+}
+
+.subject-filter {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  color: #4a5568;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+.table-wrapper {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.exams-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.exams-table th {
+  background-color: #f8fafc;
+  padding: 18px 15px;
+  color: #718096;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #edf2f7;
+}
+
+.exams-table td {
+  padding: 18px 15px;
+  border-bottom: 1px solid #edf2f7;
+  color: #2d3748;
+  font-size: 14px;
+}
+
+.exam-row:hover {
+  background-color: #f9fafb;
+}
+
+.exam-title {
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.status-badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.ongoing {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-badge.upcoming {
+  background-color: #fef9c3;
+  color: #854d0e;
+}
+
+.status-badge.finished {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.action-wrapper {
+  opacity: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-join {
+  padding: 8px 22px;
+  border-radius: 6px;
+  border: none;
+  background-color: #00b894;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 184, 148, 0.2);
+}
+
+.btn-join:hover:not(.disabled) {
+  background-color: #00a383;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 184, 148, 0.3);
+}
+
+.btn-join:active:not(.disabled) {
+  transform: translateY(0);
+}
+
+.btn-join.disabled {
+  background-color: #cbd5e0;
+  color: #718096;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.no-data {
+  padding: 40px;
+  text-align: center;
+  color: #a0aec0;
+  font-style: italic;
+}
