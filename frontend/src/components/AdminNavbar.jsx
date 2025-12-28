@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './AdminNavbar.css';
 
 function AdminNavbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState({ name: 'Admin' });
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('currentUser');
@@ -15,6 +17,12 @@ function AdminNavbar() {
 
   const isActive = (path) => {
     return location.pathname === path ? 'admin-nav-link active' : 'admin-nav-link';
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    navigate('/login');
   };
 
   return (
@@ -42,7 +50,10 @@ function AdminNavbar() {
           </li>
         </ul>
 
-        <div className="admin-navbar-profile">
+        <div 
+          className="admin-navbar-profile" 
+          onClick={() => setShowDropdown(!showDropdown)}
+        >
           <div className="profile-info">
             <span className="profile-role">Administrator</span>
             <span className="profile-name">{user.name}</span>
@@ -50,6 +61,14 @@ function AdminNavbar() {
           <div className="profile-avatar">
             A
           </div>
+          
+          {showDropdown && (
+            <div className="dropdown-menu">
+              <div className="dropdown-item" onClick={handleLogout}>
+                Đăng xuất
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </nav>

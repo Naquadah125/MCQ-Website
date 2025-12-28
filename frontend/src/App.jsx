@@ -10,6 +10,7 @@ import TeacherOverview from './pages/teacher/TeacherOverview';
 import TeacherNavbar from './components/TeacherNavbar';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import CreateUser from './pages/Admin/CreateUser';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 const StudentPlaceholder = ({ title }) => (
@@ -41,16 +42,75 @@ function App() {
         <Route path="/login" element={<><Navbar /><Login /></>} />
         <Route path="/signup" element={<><Navbar /><Signup /></>} />
 
-        <Route path="/student" element={<StudentOverview />} />
-        <Route path="/student/join" element={<StudentPlaceholder title="Tham gia thi" />} />
-        <Route path="/student/history" element={<StudentPlaceholder title="Lịch sử bài thi" />} />
+        {/* Student Routes */}
+        <Route 
+          path="/student" 
+          element={
+            <ProtectedRoute allowedRole="student">
+              <StudentOverview />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/join" 
+          element={
+            <ProtectedRoute allowedRole="student">
+              <StudentPlaceholder title="Tham gia thi" />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/history" 
+          element={
+            <ProtectedRoute allowedRole="student">
+              <StudentPlaceholder title="Lịch sử bài thi" />
+            </ProtectedRoute>
+          } 
+        />
 
-        <Route path="/teacher" element={<TeacherOverview />} />
-        <Route path="/teacher/organize" element={<TeacherPlaceholder title="Tổ chức thi" />} />
-        <Route path="/teacher/create" element={<TeacherPlaceholder title="Tạo bài thi" />} />
+        {/* Teacher Routes */}
+        <Route 
+          path="/teacher" 
+          element={
+            <ProtectedRoute allowedRole="teacher">
+              <TeacherOverview />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/teacher/organize" 
+          element={
+            <ProtectedRoute allowedRole="teacher">
+              <TeacherPlaceholder title="Tổ chức thi" />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/teacher/create" 
+          element={
+            <ProtectedRoute allowedRole="teacher">
+              <TeacherPlaceholder title="Tạo bài thi" />
+            </ProtectedRoute>
+          } 
+        />
 
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/create-user" element={<CreateUser />} />
+        {/* Admin Routes */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute allowedRole="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/create-user" 
+          element={
+            <ProtectedRoute allowedRole="admin">
+              <CreateUser />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     </Router>
   );

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './StudentNavbar.css';
 
 function StudentNavbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState({ name: 'Học sinh' });
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('currentUser');
@@ -15,6 +17,12 @@ function StudentNavbar() {
 
   const isActive = (path) => {
     return location.pathname === path ? 'student-nav-link active' : 'student-nav-link';
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    navigate('/login');
   };
 
   return (
@@ -42,7 +50,10 @@ function StudentNavbar() {
           </li>
         </ul>
 
-        <div className="student-navbar-profile">
+        <div 
+          className="student-navbar-profile"
+          onClick={() => setShowDropdown(!showDropdown)}
+        >
           <div className="profile-info">
             <span className="profile-role">Học sinh</span>
             <span className="profile-name">{user.name}</span>
@@ -50,6 +61,14 @@ function StudentNavbar() {
           <div className="profile-avatar">
             {user.name ? user.name.charAt(0).toUpperCase() : 'H'}
           </div>
+
+          {showDropdown && (
+            <div className="dropdown-menu">
+              <div className="dropdown-item" onClick={handleLogout}>
+                Đăng xuất
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </nav>
