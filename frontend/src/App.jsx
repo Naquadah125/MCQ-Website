@@ -7,7 +7,7 @@ import Signup from './pages/Signup';
 import StudentOverview from './pages/Student/StudentOverview';
 import StudentNavbar from './components/StudentNavbar';
 import TeacherOverview from './pages/teacher/TeacherOverview';
-import TeacherNavbar from './components/TeacherNavbar';
+ import TeacherNavbar from './components/TeacherNavbar';
 import './App.css';
 
 // Placeholder cho Student

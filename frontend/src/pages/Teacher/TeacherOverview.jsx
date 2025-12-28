@@ -1,14 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import TeacherNavbar from '../../components/TeacherNavbar';
 import './TeacherOverview.css';
 
 function TeacherOverview() {
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setUsername(user.name || 'Giáo viên');
+    }
+  }, []);
+
   return (
     <div className="teacher-bg">
       <TeacherNavbar />
       <div className="overview-container">
         <div className="overview-header">
-          <h1>Xin chào, Thầy giáo B! 👨‍🏫</h1>
+          <h1>Xin chào, {username}! 👨‍🏫</h1>
           <p>Quản lý lớp học và bài thi của bạn</p>
         </div>
 
