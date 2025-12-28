@@ -31,12 +31,13 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // Lưu thông tin user và token
         localStorage.setItem('token', data.token);
         localStorage.setItem('currentUser', JSON.stringify(data.user));
 
         if (role === 'teacher') {
           navigate('/teacher');
+        } else if (role === 'admin') {
+          navigate('/admin');
         } else {
           navigate('/student');
         }
@@ -44,7 +45,6 @@ function Login() {
         setError(data.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại!');
       }
     } catch (err) {
-      console.error('Login error:', err);
       setError('Không thể kết nối đến Server (Port 5001). Hãy kiểm tra lại backend!');
     }
   };
@@ -71,6 +71,13 @@ function Login() {
             type="button"
           >
             Giáo viên
+          </button>
+          <button 
+            className={`role-btn ${role === 'admin' ? 'active' : ''}`}
+            onClick={() => setRole('admin')}
+            type="button"
+          >
+            Admin
           </button>
         </div>
 
@@ -102,7 +109,7 @@ function Login() {
           {error && <div style={{color: 'red', marginBottom: '10px', fontSize: '14px'}}>{error}</div>}
 
           <button type="submit" className="btn-submit">
-            Đăng nhập ({role === 'student' ? 'Học sinh' : 'Giáo viên'})
+            Đăng nhập ({role})
           </button>
         </form>
 

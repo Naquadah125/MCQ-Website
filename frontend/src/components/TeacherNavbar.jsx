@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './TeacherNavbar.css';
 
 function TeacherNavbar() {
   const location = useLocation();
+  const [user, setUser] = useState({ name: 'Giáo viên' });
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   const isActive = (path) => {
     return location.pathname === path ? 'teacher-nav-link active' : 'teacher-nav-link';
@@ -37,10 +45,10 @@ function TeacherNavbar() {
         <div className="teacher-navbar-profile">
           <div className="profile-info">
             <span className="profile-role">Giáo viên</span>
-            <span className="profile-name">Thầy giáo B</span>
+            <span className="profile-name">{user.name}</span>
           </div>
           <div className="profile-avatar">
-            B
+            {user.name ? user.name.charAt(0).toUpperCase() : 'G'}
           </div>
         </div>
       </div>

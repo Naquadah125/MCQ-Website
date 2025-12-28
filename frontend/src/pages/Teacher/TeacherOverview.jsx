@@ -3,7 +3,7 @@ import TeacherNavbar from '../../components/TeacherNavbar';
 import './TeacherOverview.css';
 
 function TeacherOverview() {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState('Giáo viên');
 
   useEffect(() => {
     const storedUser = localStorage.getItem('currentUser');
