@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+.features-container {
+  font-family: 'Inter', sans-serif;
+  color: #333;
+  background-color: #fff;
+}
+
+/* 1. Header */
+.features-header {
+  text-align: center;
+  padding: 80px 20px 60px;
+  background: linear-gradient(to bottom, #f0f7ff, #ffffff);
+}
+
+.features-header .brand-tag {
+  color: #0066ff;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.features-header h1 {
+  font-size: 42px;
+  margin: 15px 0 20px;
+  color: #1a1a1a;
+  font-weight: 800;
+}
+
+.features-header p {
+  font-size: 18px;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* 2. Feature Blocks (Zig-zag) */
+.feature-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 80px auto;
+  padding: 0 20px;
+  gap: 60px;
+}
+
+/* Đảo ngược thứ tự cho phần tử chẵn để tạo hiệu ứng Zig-zag */
+.feature-block.reverse {
+  flex-direction: row-reverse;
+}
+
+.feature-text {
+  flex: 1;
+}
+
+.feature-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.feature-image img {
+  max-width: 100%;
+  border-radius: 20px;
+  /* box-shadow: 0 10px 30px rgba(0,0,0,0.08); Bỏ comment nếu muốn ảnh có bóng đổ */
+}
+
+/* Icons & Typography trong Block */
+.icon-wrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.icon-blue { background-color: #e6f0ff; color: #0066ff; }
+.icon-purple { background-color: #f3e6ff; color: #8c52ff; }
+.icon-green { background-color: #e6fffa; color: #00cc99; }
+
+.feature-text h2 {
+  font-size: 32px;
+  margin-bottom: 15px;
+  color: #1a1a1a;
+}
+
+.feature-text p {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+}
+
+.feature-list li {
+  margin-bottom: 10px;
+  padding-left: 25px;
+  position: relative;
+  color: #444;
+  font-weight: 500;
+}
+
+/* Dấu check giả lập */
+.feature-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #0066ff;
+  font-weight: bold;
+}
+
+/* 3. Features Grid */
+.features-grid-section {
+  background-color: #f9fafb;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.features-grid-section h2 {
+  font-size: 30px;
+  margin-bottom: 50px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.grid-item {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  transition: transform 0.2s;
+  text-align: left;
+}
+
+.grid-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.grid-item h3 {
+  color: #0066ff;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.grid-item p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* 4. CTA Footer */
+.features-cta {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.features-cta h2 {
+  font-size: 32px;
+  margin-bottom: 30px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .feature-block, 
+  .feature-block.reverse {
+    flex-direction: column;
+    text-align: center;
+    gap: 30px;
+  }
+
+  .feature-list li {
+    display: inline-block;
+    margin-right: 15px;
+    text-align: left;
+  }
+  
+  .icon-wrapper {
+    margin: 0 auto 20px;
+  }
+}

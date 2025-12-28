@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.student-navbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-family: 'Inter', sans-serif;
+}
+
+.student-navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+}
+
+.student-navbar-logo a {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0066ff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.student-navbar-logo span {
+  background-color: #e6f0ff;
+  color: #0066ff;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.student-navbar-menu {
+  display: flex;
+  list-style: none;
+  gap: 40px;
+  margin: 0;
+  padding: 0;
+}
+
+.student-nav-link {
+  text-decoration: none;
+  color: #555;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  padding: 22px 0;
+  border-bottom: 3px solid transparent;
+}
+
+.student-nav-link:hover {
+  color: #0066ff;
+}
+
+.student-nav-link.active {
+  color: #0066ff;
+  border-bottom-color: #0066ff;
+  font-weight: 600;
+}
+
+.student-navbar-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.profile-info {
+  text-align: right;
+}
+
+.profile-role {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.profile-name {
+  display: block;
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #0066ff;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+}

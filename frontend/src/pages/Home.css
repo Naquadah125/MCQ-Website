@@ -1,66 +1,195 @@
+/* Home.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
 .home-container {
   min-height: calc(100vh - 70px);
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background-color: #ffffff; /* Nền trắng giống ảnh mẫu */
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
 }
 
-.hero {
-  background: linear-gradient(135deg, #008080 0%, #20b2aa 100%);
-  color: white;
-  padding: 100px 20px;
-  text-align: center;
-  min-height: 400px;
+.hero-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 50px;
 }
 
-.hero-content h1 {
+/* --- PHẦN BÊN TRÁI (TEXT) --- */
+.hero-text {
+  flex: 1;
+  max-width: 600px;
+}
+
+.brand-tag {
+  color: #0066ff; /* Màu xanh dương giống ảnh */
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.hero-text h1 {
   font-size: 48px;
-  margin: 0 0 20px 0;
-  font-weight: bold;
+  line-height: 1.2;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+  font-weight: 800;
 }
 
-.hero-content p {
-  font-size: 20px;
-  margin: 0 0 30px 0;
-  opacity: 0.9;
+.hero-text p {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 30px;
+  line-height: 1.6;
 }
 
 .cta-button {
-  background-color: white;
-  color: #008080;
+  background-color: #0066ff; /* Nút màu xanh */
+  color: white;
   border: none;
   padding: 15px 40px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 5px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 30px; /* Bo tròn nút */
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(0, 102, 255, 0.3);
 }
 
 .cta-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  background-color: #0052cc;
 }
 
-.intro-section {
-  max-width: 1000px;
-  margin: 60px auto;
-  padding: 40px;
+/* Các thẻ tính năng (Feature Tags) */
+.feature-tags {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.tag-row {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background-color: #f0f7ff; /* Nền xanh rất nhạt */
+  color: #444;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Thanh nền tảng màu đen bên dưới */
+.platform-bar {
+  margin-top: 40px;
+  background-color: #1a1a1a;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 14px;
+}
+
+.platform-icons {
+  display: flex;
+  gap: 10px;
+  color: #ccc;
+  font-weight: bold;
+}
+
+/* --- PHẦN BÊN PHẢI (IMAGE) --- */
+.hero-image {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Vòng tròn màu xanh trang trí sau lưng ảnh */
+.image-bg-circle {
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  background-color: #0066ff;
+  border-radius: 50%;
+  z-index: 0;
+  top: 50px;
+  right: 20px;
+}
+
+/* Ảnh chính */
+.main-img {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  height: auto;
+  border-radius: 20px; /* Nếu ảnh vuông thì bo góc, nếu ảnh tách nền thì bỏ dòng này */
+  /* mask-image: linear-gradient(to bottom, black 80%, transparent 100%);  Hiệu ứng mờ chân nếu cần */
+}
+
+/* Icon bay bay */
+.floating-icon {
+  position: absolute;
   background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  font-size: 24px;
+  z-index: 2;
+  animation: float 3s ease-in-out infinite;
 }
 
-.intro-section h2 {
-  font-size: 32px;
-  color: #008080;
-  margin-bottom: 20px;
+.icon-1 {
+  top: 20%;
+  left: 0;
 }
 
-.intro-section p {
-  font-size: 16px;
-  color: #555;
-  line-height: 1.8;
+.icon-2 {
+  bottom: 20%;
+  right: 0;
+  animation-delay: 1.5s;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Responsive cho Mobile */
+@media (max-width: 900px) {
+  .hero-wrapper {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-text {
+    max-width: 100%;
+  }
+
+  .feature-tags, .tag-row {
+    justify-content: center;
+  }
+  
+  .image-bg-circle {
+    width: 300px;
+    height: 300px;
+    right: auto;
+  }
 }

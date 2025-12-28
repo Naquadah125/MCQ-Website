@@ -1,8 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
 function Navbar() {
+  const navigate = useNavigate();
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -10,10 +12,9 @@ function Navbar() {
           <Link to="/">Quizzing</Link>
         </div>
 
-        {/* Nagivate bar ở trên */}
         <ul className="navbar-menu">
           <li>
-            <Link to="/quiz" className="nav-link">
+            <Link to="/" className="nav-link">
               Giới thiệu
             </Link>
           </li>
@@ -24,7 +25,7 @@ function Navbar() {
           </li>
           <li>
             <Link to="/history" className="nav-link">
-              Lịch sủ
+              Lịch sử
             </Link>
           </li>
           <li>
@@ -34,10 +35,13 @@ function Navbar() {
           </li>
         </ul>
 
-        {/* Nút bên phải */}
         <div className="navbar-buttons">
-          <button className="btn-login">Đăng nhập</button>
-          <button className="btn-signup">Đăng ký</button>
+          <button className="btn-login" onClick={() => navigate('/login')}>
+            Đăng nhập
+          </button>
+          <button className="btn-signup" onClick={() => navigate('/signup')}>
+            Đăng ký
+          </button>
         </div>
       </div>
     </nav>
