@@ -13,7 +13,13 @@ function StudentOverview() {
       setUsername(user.name || 'Học sinh');
 
       fetch(`http://localhost:5001/api/results/student/${user.id || user._id}`)
-        .then(res => res.json())
+        .then(async res => {
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`HTTP ${res.status}: ${text}`);
+          }
+          return res.json();
+        })
         .then(data => {
           if (Array.isArray(data)) {
             const totalScore = data.reduce((acc, curr) => acc + curr.score, 0);

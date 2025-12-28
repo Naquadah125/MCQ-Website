@@ -11,13 +11,23 @@ function StudentHistory() {
     if (storedUser) {
       const user = JSON.parse(storedUser);
       fetch(`http://localhost:5001/api/results/student/${user.id || user._id}`)
-        .then(res => res.json())
+        .then(async res => {
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`HTTP ${res.status}: ${text}`);
+          }
+          return res.json();
+        })
         .then(data => {
-          setResults(data);
+          if (Array.isArray(data)) setResults(data);
+          else {
+            console.warn('Unexpected results response:', data);
+            setResults([]);
+          }
           setLoading(false);
         })
         .catch(err => {
-          console.error(err);
+          console.error('Fetch student history error:', err);
           setLoading(false);
         });
     }

@@ -1,37 +1,131 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const connectDB = require('./config/db');
 
 const User = require('./models/User');
 const Question = require('./models/Question');
 const Exam = require('./models/Exam'); 
-const Result = require('./models/Result'); // Đảm bảo model này đã tồn tại
+const Result = require('./models/Result');
 
 dotenv.config();
+
 const app = express();
-app.use(cors());
-app.use(express.json());
+const PORT = process.env.PORT || 5001;
 
 connectDB();
 
-// --- API MỚI: Lấy danh sách bài thi kèm trạng thái cho học sinh ---
+app.use(cors());
+app.use(express.json());
+
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ message: 'Email đã tồn tại' });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const newUser = new User({ name, email, password: hashedPassword, role });
+    await newUser.save();
+    res.status(201).json({ message: 'Đăng ký thành công' });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi server', error: err.message });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password, role } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: 'Email không tồn tại' });
+    if (role && user.role !== role) return res.status(403).json({ message: 'Vai trò không hợp lệ' });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: 'Mật khẩu không đúng' });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'secretkey', { expiresIn: '1d' });
+    res.json({
+      token,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+});
+
+app.post('/api/questions', async (req, res) => {
+  try {
+    const newQuestion = new Question(req.body);
+    const savedQuestion = await newQuestion.save();
+    res.status(201).json(savedQuestion);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi tạo câu hỏi', error: err.message });
+  }
+});
+
+app.get('/api/questions', async (req, res) => {
+  try {
+    const { subject, grade, difficulty } = req.query;
+    let filter = {};
+    if (subject) filter.subject = subject;
+    if (grade) filter.grade = grade;
+    if (difficulty) filter.difficulty = difficulty;
+    const questions = await Question.find(filter).sort({ createdAt: -1 });
+    res.json(questions);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy danh sách', error: err.message });
+  }
+});
+
+app.post('/api/exams', async (req, res) => {
+  try {
+    const { title, description, startTime, endTime, questionIds, creator } = req.body;
+    const selectedQuestions = await Question.find({ _id: { $in: questionIds } });
+    if (selectedQuestions.length === 0) {
+      return res.status(400).json({ message: 'Không tìm thấy câu hỏi nào được chọn' });
+    }
+    const examQuestions = selectedQuestions.map(q => ({
+      questionText: q.content,
+      options: q.options.map(opt => opt.text),
+      correctOption: q.correctAnswer === 'A' ? 0 : q.correctAnswer === 'B' ? 1 : q.correctAnswer === 'C' ? 2 : 3
+    }));
+    const newExam = new Exam({
+      title,
+      description,
+      creator,
+      startTime,
+      endTime,
+      questions: examQuestions
+    });
+    await newExam.save();
+    res.status(201).json({ message: 'Tạo bài thi thành công!', examId: newExam._id });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi tạo bài thi', error: err.message });
+  }
+});
+
+app.get('/api/exams', async (req, res) => {
+  try {
+    const exams = await Exam.find().sort({ startTime: 1 });
+    res.json(exams);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy danh sách bài thi' });
+  }
+});
+
+// Lấy danh sách bài thi cho 1 học sinh kèm trạng thái đã làm hay chưa
 app.get('/api/exams/student/:studentId', async (req, res) => {
   try {
     const { studentId } = req.params;
-    // 1. Lấy tất cả bài thi
+    console.log(`[DEBUG] GET /api/exams/student/${studentId} from ${req.ip} - headers:`, req.headers['origin'] || req.headers['referer']);
     const exams = await Exam.find().sort({ startTime: 1 });
-    // 2. Lấy danh sách ID các bài thi mà học sinh này đã làm
     const results = await Result.find({ student: studentId }, 'exam');
     const completedExamIds = results.map(r => r.exam.toString());
 
-    // 3. Gắn thêm thuộc tính isCompleted vào object bài thi
-    const examsWithStatus = exams.map(exam => {
-      return {
-        ...exam._doc,
-        isCompleted: completedExamIds.includes(exam._id.toString())
-      };
-    });
+    const examsWithStatus = exams.map(exam => ({
+      ...exam._doc,
+      isCompleted: completedExamIds.includes(exam._id.toString())
+    }));
 
     res.json(examsWithStatus);
   } catch (err) {
@@ -39,7 +133,7 @@ app.get('/api/exams/student/:studentId', async (req, res) => {
   }
 });
 
-// --- CÁC API CŨ CỦA BẠN (GIỮ NGUYÊN) ---
+// Nộp kết quả bài thi
 app.post('/api/results/submit', async (req, res) => {
   try {
     const { examId, studentId, studentAnswers } = req.body;
@@ -76,10 +170,13 @@ app.post('/api/results/submit', async (req, res) => {
   }
 });
 
+// Lấy tất cả kết quả của 1 học sinh
 app.get('/api/results/student/:studentId', async (req, res) => {
   try {
-    const results = await Result.find({ student: req.params.studentId })
-      .populate('exam', 'title') 
+    const studentId = req.params.studentId;
+    console.log(`[DEBUG] GET /api/results/student/${studentId} from ${req.ip} - headers:`, req.headers['origin'] || req.headers['referer']);
+    const results = await Result.find({ student: studentId })
+      .populate('exam', 'title')
       .sort({ completedAt: -1 });
     res.json(results);
   } catch (err) {
@@ -87,15 +184,14 @@ app.get('/api/results/student/:studentId', async (req, res) => {
   }
 });
 
+// Thống kê cho teacher dashboard
 app.get('/api/teacher/stats', async (req, res) => {
   try {
-    const totalExams = await Exam.countDocuments(); // Tổng số bài thi
-    const totalQuestions = await Question.countDocuments(); // Tổng số câu hỏi trong ngân hàng
-    const totalResults = await Result.countDocuments(); // Tổng số lượt thi đã thực hiện
-    
-    // Đếm số lượng học sinh duy nhất đã tham gia thi
+    const totalExams = await Exam.countDocuments();
+    const totalQuestions = await Question.countDocuments();
+    const totalResults = await Result.countDocuments();
     const studentsParticipated = await Result.distinct('student');
-    
+
     res.json({
       totalExams,
       totalQuestions,
@@ -107,17 +203,29 @@ app.get('/api/teacher/stats', async (req, res) => {
   }
 });
 
-// API: Lấy danh sách bài thi mới nhất (Thay thế dữ liệu bảng)
+// Recent exams
 app.get('/api/teacher/recent-exams', async (req, res) => {
   try {
     const exams = await Exam.find()
-      .sort({ createdAt: -1 }) // Bài mới tạo hiện lên đầu
-      .limit(5); // Lấy 5 bài gần nhất
+      .sort({ createdAt: -1 })
+      .limit(5);
     res.json(exams);
   } catch (err) {
     res.status(500).json({ message: 'Lỗi lấy danh sách bài thi gần đây' });
   }
 });
 
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.get('/api/results/exam/:examId', async (req, res) => {
+  try {
+    const results = await Result.find({ exam: req.params.examId })
+      .populate('student', 'name email')
+      .sort({ score: -1 });
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi lấy danh sách điểm" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server đang chạy tại port: ${PORT}`);
+});

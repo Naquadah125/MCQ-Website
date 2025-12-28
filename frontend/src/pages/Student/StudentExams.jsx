@@ -17,13 +17,19 @@ function StudentExams() {
     if (user) {
       // GỌI API MỚI: Truyền studentId để biết bài nào đã làm
       fetch(`http://localhost:5001/api/exams/student/${user.id || user._id}`)
-        .then(res => res.json())
+        .then(async res => {
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`HTTP ${res.status}: ${text}`);
+          }
+          return res.json();
+        })
         .then(data => {
           setExams(data);
           setLoading(false);
         })
         .catch(err => {
-          console.error(err);
+          console.error('Fetch student exams error:', err);
           setLoading(false);
         });
     }
@@ -134,7 +140,7 @@ function StudentExams() {
                           <button 
                             className={`btn-join ${!isOngoing ? 'disabled' : ''}`}
                             disabled={!isOngoing}
-                            onClick={() => navigate(`/student/instruction/${ex._id}`)}
+                            onClick={() => navigate(`/student/exam-detail/${ex._id}`)}
                           >
                             Tham gia
                           </button>
