@@ -147,3 +147,19 @@
   color: #a0aec0;
   font-style: italic;
 }
+
+.status-badge.completed {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.btn-view-result {
+  background-color: #3182ce !important;
+}
+
+.row-completed {
+  background-color: #fcfcfc;
+}
+.row-completed .exam-title {
+  color: #718096;
+}

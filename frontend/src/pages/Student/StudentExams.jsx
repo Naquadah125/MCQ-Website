@@ -1,23 +1,32 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import StudentNavbar from '../../components/StudentNavbar';
 import './StudentExams.css';
 
 function StudentExams() {
+  const navigate = useNavigate();
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterSubject, setFilterSubject] = useState('All');
 
   useEffect(() => {
-    fetch('http://localhost:5001/api/exams')
-      .then(res => res.json())
-      .then(data => {
-        setExams(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+    // Lấy ID học sinh từ localStorage
+    const storedUser = localStorage.getItem('currentUser');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+
+    if (user) {
+      // GỌI API MỚI: Truyền studentId để biết bài nào đã làm
+      fetch(`http://localhost:5001/api/exams/student/${user.id || user._id}`)
+        .then(res => res.json())
+        .then(data => {
+          setExams(data);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error(err);
+          setLoading(false);
+        });
+    }
   }, []);
 
   const getSortedExams = () => {
@@ -34,6 +43,12 @@ function StudentExams() {
     const finished = [];
 
     filtered.forEach(ex => {
+      // ƯU TIÊN: Nếu đã làm rồi, cho xuống nhóm "đã kết thúc/hoàn thành"
+      if (ex.isCompleted) {
+        finished.push({ ...ex, status: 'completed' });
+        return;
+      }
+
       const start = new Date(ex.startTime);
       const end = new Date(ex.endTime);
 
@@ -91,10 +106,11 @@ function StudentExams() {
             <tbody>
               {sortedExams.map((ex, index) => {
                 const isOngoing = ex.status === 'ongoing';
+                const isCompleted = ex.status === 'completed';
                 const isFinished = ex.status === 'finished';
 
                 return (
-                  <tr key={ex._id} className="exam-row">
+                  <tr key={ex._id} className={`exam-row ${isCompleted ? 'row-completed' : ''}`}>
                     <td>{index + 1}</td>
                     <td className="exam-title">{ex.title}</td>
                     <td>{new Date(ex.startTime).toLocaleString('vi-VN')}</td>
@@ -102,17 +118,27 @@ function StudentExams() {
                     <td>{ex.questions?.length * 2 || 0} phút</td>
                     <td>
                       <span className={`status-badge ${ex.status}`}>
-                        {isOngoing ? '● Đang diễn ra' : isFinished ? 'Đã kết thúc' : 'Sắp diễn ra'}
+                        {isCompleted ? '✓ Đã hoàn thành' : isOngoing ? '● Đang diễn ra' : isFinished ? 'Đã kết thúc' : 'Sắp diễn ra'}
                       </span>
                     </td>
                     <td className="text-center">
                       <div className="action-wrapper">
-                        <button 
-                          className={`btn-join ${!isOngoing ? 'disabled' : ''}`}
-                          disabled={!isOngoing}
-                        >
-                          {isFinished ? 'Xem lại' : 'Tham gia'}
-                        </button>
+                        {isCompleted ? (
+                          <button 
+                            className="btn-join btn-view-result"
+                            onClick={() => navigate('/student/history')}
+                          >
+                            Xem lại
+                          </button>
+                        ) : (
+                          <button 
+                            className={`btn-join ${!isOngoing ? 'disabled' : ''}`}
+                            disabled={!isOngoing}
+                            onClick={() => navigate(`/student/instruction/${ex._id}`)}
+                          >
+                            Tham gia
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

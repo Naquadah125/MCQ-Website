@@ -16,6 +16,9 @@ import CreateQuestion from './pages/Teacher/CreateQuestion';
 import CreateExamFromBank from './pages/Teacher/CreateExamFromBank';
 import TeacherOrganizeSelection from './pages/Teacher/TeacherOrganizeSelection';
 import StudentExams from './pages/Student/StudentExams';
+import ExamInstruction from './pages/Student/ExamInstruction';
+import TakeExam from './pages/Student/TakeExam';
+import StudentHistory from './pages/Student/StudentHistory';
 import './App.css';
 
 const StudentPlaceholder = ({ title }) => (
@@ -33,7 +36,7 @@ const TeacherPlaceholder = ({ title }) => (
     <TeacherNavbar />
     <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
       <h2>{title}</h2>
-      <p>Chức năng đang được xây dựng.</p>
+      <p>Tính năng đang phát triển.</p>
     </div>
   </div>
 );
@@ -42,30 +45,28 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
         <Route path="/" element={<><Navbar /><Home /></>} />
         <Route path="/features" element={<><Navbar /><Features /></>} />
         <Route path="/login" element={<><Navbar /><Login /></>} />
         <Route path="/signup" element={<><Navbar /><Signup /></>} />
 
-        {/* Student Routes */}
         <Route path="/student" element={<ProtectedRoute allowedRole="student"><StudentOverview /></ProtectedRoute>} />
         <Route path="/student/join" element={<ProtectedRoute allowedRole="student"><StudentExams /></ProtectedRoute>} />
-        <Route path="/student/history" element={<ProtectedRoute allowedRole="student"><StudentPlaceholder title="Lịch sử bài thi" /></ProtectedRoute>} />
-
-        {/* Teacher Routes */}
-        <Route path="/teacher" element={<ProtectedRoute allowedRole="teacher"><TeacherOverview /></ProtectedRoute>} />
+        <Route path="/student/history" element={<ProtectedRoute allowedRole="student"><StudentHistory /></ProtectedRoute>} />
         
-        {/* Tổ chức thi Routes */}
+        {/* ĐÃ SỬA: Khớp với navigate('/student/exam-detail/...') */}
+        <Route path="/student/exam-detail/:id" element={<ProtectedRoute allowedRole="student"><ExamInstruction /></ProtectedRoute>} />
+        
+        {/* Route dự phòng cho trang làm bài */}
+        <Route path="/student/take-exam/:id" element={<ProtectedRoute allowedRole="student"><TakeExam /></ProtectedRoute>} />
+
+        <Route path="/teacher" element={<ProtectedRoute allowedRole="teacher"><TeacherOverview /></ProtectedRoute>} />
         <Route path="/teacher/organize" element={<ProtectedRoute allowedRole="teacher"><TeacherOrganizeSelection /></ProtectedRoute>} />
         <Route path="/teacher/organize/bank" element={<ProtectedRoute allowedRole="teacher"><CreateExamFromBank /></ProtectedRoute>} />
-        
-        {/* Tạo câu hỏi Routes */}
         <Route path="/teacher/create" element={<ProtectedRoute allowedRole="teacher"><TeacherCreateSelection /></ProtectedRoute>} />
         <Route path="/teacher/create-question" element={<ProtectedRoute allowedRole="teacher"><CreateQuestion /></ProtectedRoute>} />
-        <Route path="/teacher/create-exam" element={<ProtectedRoute allowedRole="teacher"><TeacherPlaceholder title="Tạo Bài Thi (Sắp ra mắt)" /></ProtectedRoute>} />
+        <Route path="/teacher/create-exam" element={<ProtectedRoute allowedRole="teacher"><TeacherPlaceholder title="Tạo Bài Thi" /></ProtectedRoute>} />
 
-        {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/create-user" element={<ProtectedRoute allowedRole="admin"><CreateUser /></ProtectedRoute>} />
       </Routes>

@@ -1,0 +1,109 @@
+.history-page {
+  background-color: #f4f7f6;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+.history-container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.history-header {
+  margin-bottom: 25px;
+}
+
+.history-header h2 {
+  font-size: 24px;
+  color: #1a202c;
+}
+
+.table-wrapper {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.history-table th {
+  background-color: #f8fafc;
+  padding: 18px 15px;
+  color: #718096;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #edf2f7;
+}
+
+.history-table td {
+  padding: 18px 15px;
+  border-bottom: 1px solid #edf2f7;
+  color: #2d3748;
+  font-size: 14px;
+}
+
+.history-row:hover {
+  background-color: #f9fafb;
+}
+
+.exam-title {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.score-cell {
+  font-weight: 700;
+  color: #2b6cb0;
+  white-space: nowrap;
+}
+
+.result-badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.result-badge.pass {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.result-badge.fail {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.btn-detail-view {
+  padding: 6px 15px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-detail-view:hover {
+  background-color: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+.no-data {
+  padding: 40px;
+  text-align: center;
+  color: #a0aec0;
+  font-style: italic;
+}
