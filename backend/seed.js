@@ -1,41 +1,64 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
+const connectDB = require('./config/db');
+
+// Import Models
+const User = require('./models/User');
+const Question = require('./models/Question');
+
+// Import Dữ liệu mẫu
+const { users, questions } = require('./data/sampleData');
 
 dotenv.config();
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['student', 'teacher', 'admin'], default: 'student' }
-});
-
-const User = mongoose.model('User', userSchema);
-
 const seedData = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    // 1. Kết nối DB
+    await connectDB();
     
+    // 2. Xóa sạch dữ liệu cũ
     await User.deleteMany({});
+    await Question.deleteMany({});
+    console.log('🗑️  Đã xóa dữ liệu cũ');
 
+    // 3. Tạo Users
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash('123', salt);
+    const hashedPassword = await bcrypt.hash('123', salt); // Mật khẩu chung là 123
 
-    const users = [
-      {
-        name: 'Quản Trị Viên',
-        email: 'admin@test.com',
-        password: hashedPassword,
-        role: 'admin'
-      }
-    ];
+    // Duyệt qua mảng users từ file data và tạo user mới
+    // Chúng ta dùng Promise.all để tạo song song cho nhanh
+    const createdUsers = await Promise.all(users.map(async (userData) => {
+      const newUser = new User({
+        ...userData,
+        password: hashedPassword
+      });
+      return await newUser.save();
+    }));
+    
+    console.log('👤 Đã tạo Users thành công');
 
-    await User.insertMany(users);
-    console.log('Done!');
+    // 4. Tìm tài khoản Giáo viên để gán quyền tác giả cho câu hỏi
+    const teacherUser = createdUsers.find(user => user.role === 'teacher');
+
+    if (!teacherUser) {
+      throw new Error("Không tìm thấy user có role 'teacher' trong dữ liệu mẫu");
+    }
+
+    // 5. Gán author ID vào danh sách câu hỏi và lưu vào DB
+    const questionsWithAuthor = questions.map(question => ({
+      ...question,
+      author: teacherUser._id // Tự động lấy ID của giáo viên vừa tạo
+    }));
+
+    await Question.insertMany(questionsWithAuthor);
+    console.log('📚 Đã tạo Câu hỏi mẫu thành công');
+
+    console.log('-----------------------------------');
+    console.log('🎉 Hoàn tất quá trình Seed!');
     process.exit();
   } catch (error) {
-    console.error(error);
+    console.error('❌ Lỗi seed data:', error);
     process.exit(1);
   }
 };
