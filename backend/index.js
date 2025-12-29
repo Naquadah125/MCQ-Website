@@ -1,3 +1,4 @@
+require('dotenv').config({ path: '../.env' });
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -5,7 +6,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const connectDB = require('./config/db');
 
-const User = require('./models/User');
+// Import Models
+const User = require('./models/user');
+const Profile = require('./models/Profile'); // MODEL MỚI
 const Question = require('./models/Question');
 const Exam = require('./models/Exam'); 
 const Result = require('./models/Result');
@@ -20,21 +23,84 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+// --- MIDDLEWARE XÁC THỰC (Dùng để lấy thông tin cá nhân an toàn) ---
+const authorize = (roles = []) => {
+    return (req, res, next) => {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ message: 'Bạn cần đăng nhập' });
+
+        const token = authHeader.split(" ")[1];
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
+            if (roles.length && !roles.includes(decoded.role)) {
+                return res.status(403).json({ message: 'Không có quyền truy cập' });
+            }
+            req.user = decoded; // Lưu id và role vào req.user
+            next();
+        } catch (err) {
+            res.status(401).json({ message: 'Token không hợp lệ' });
+        }
+    };
+};
+
+// --- 1. ĐĂNG KÝ (Sửa lại để tạo cả Profile) ---
 app.post('/api/auth/register', async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'Email đã tồn tại' });
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    const newUser = new User({ name, email, password: hashedPassword, role });
-    await newUser.save();
-    res.status(201).json({ message: 'Đăng ký thành công' });
-  } catch (err) {
-    res.status(500).json({ message: 'Lỗi server', error: err.message });
-  }
+    try {
+        const { name, email, password, role, fullName, phoneNumber, ...otherProfileInfo } = req.body;
+        
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.status(400).json({ message: 'Email đã tồn tại' });
+
+        // Tạo User
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        const newUser = new User({ name, email, password: hashedPassword, role });
+        const savedUser = await newUser.save();
+
+        // Tạo Profile liên kết với User vừa tạo
+        const newProfile = new Profile({
+            user: savedUser._id,
+            fullName: fullName || name, // Nếu không gửi fullName thì lấy tạm name
+            phoneNumber,
+            ...otherProfileInfo
+        });
+        await newProfile.save();
+
+        res.status(201).json({ message: 'Đăng ký tài khoản và hồ sơ thành công' });
+    } catch (err) {
+        res.status(500).json({ message: 'Lỗi server', error: err.message });
+    }
 });
 
+// --- 2. LẤY THÔNG TIN CÁ NHÂN (Profile) ---
+app.get('/api/profile/me', authorize(), async (req, res) => {
+    try {
+        const profile = await Profile.findOne({ user: req.user.id })
+            .populate('user', ['name', 'email', 'role']);
+        
+        if (!profile) return res.status(404).json({ message: 'Không tìm thấy hồ sơ' });
+        res.json(profile);
+    } catch (err) {
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+});
+
+// --- 3. CẬP NHẬT THÔNG TIN CÁ NHÂN ---
+app.put('/api/profile/me', authorize(), async (req, res) => {
+    try {
+        const updates = req.body;
+        const profile = await Profile.findOneAndUpdate(
+            { user: req.user.id },
+            { $set: updates },
+            { new: true }
+        );
+        res.json({ message: 'Cập nhật thành công', profile });
+    } catch (err) {
+        res.status(500).json({ message: 'Lỗi cập nhật hồ sơ' });
+    }
+});
+
+// --- CÁC ROUTE AUTH KHÁC ---
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -53,6 +119,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// --- QUẢN LÝ CÂU HỎI & KỲ THI (Giữ nguyên của bạn) ---
 app.post('/api/questions', async (req, res) => {
   try {
     const newQuestion = new Question(req.body);
@@ -113,11 +180,9 @@ app.get('/api/exams', async (req, res) => {
   }
 });
 
-// Lấy danh sách bài thi cho 1 học sinh kèm trạng thái đã làm hay chưa
 app.get('/api/exams/student/:studentId', async (req, res) => {
   try {
     const { studentId } = req.params;
-    console.log(`[DEBUG] GET /api/exams/student/${studentId} from ${req.ip} - headers:`, req.headers['origin'] || req.headers['referer']);
     const exams = await Exam.find().sort({ startTime: 1 });
     const results = await Result.find({ student: studentId }, 'exam');
     const completedExamIds = results.map(r => r.exam.toString());
@@ -133,7 +198,6 @@ app.get('/api/exams/student/:studentId', async (req, res) => {
   }
 });
 
-// Nộp kết quả bài thi
 app.post('/api/results/submit', async (req, res) => {
   try {
     const { examId, studentId, studentAnswers } = req.body;
@@ -170,11 +234,9 @@ app.post('/api/results/submit', async (req, res) => {
   }
 });
 
-// Lấy tất cả kết quả của 1 học sinh
 app.get('/api/results/student/:studentId', async (req, res) => {
   try {
     const studentId = req.params.studentId;
-    console.log(`[DEBUG] GET /api/results/student/${studentId} from ${req.ip} - headers:`, req.headers['origin'] || req.headers['referer']);
     const results = await Result.find({ student: studentId })
       .populate('exam', 'title')
       .sort({ completedAt: -1 });
@@ -184,7 +246,7 @@ app.get('/api/results/student/:studentId', async (req, res) => {
   }
 });
 
-// Thống kê cho teacher dashboard
+// Thống kê & Bài thi gần đây (Giữ nguyên)
 app.get('/api/teacher/stats', async (req, res) => {
   try {
     const totalExams = await Exam.countDocuments();
@@ -203,12 +265,9 @@ app.get('/api/teacher/stats', async (req, res) => {
   }
 });
 
-// Recent exams
 app.get('/api/teacher/recent-exams', async (req, res) => {
   try {
-    const exams = await Exam.find()
-      .sort({ createdAt: -1 })
-      .limit(5);
+    const exams = await Exam.find().sort({ createdAt: -1 }).limit(5);
     res.json(exams);
   } catch (err) {
     res.status(500).json({ message: 'Lỗi lấy danh sách bài thi gần đây' });
