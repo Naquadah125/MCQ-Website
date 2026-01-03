@@ -65,7 +65,7 @@ function StudentHistory() {
                     <td>{index + 1}</td>
                     <td className="exam-title">{res.exam?.title || 'N/A'}</td>
                     <td>{new Date(res.completedAt).toLocaleString('vi-VN')}</td>
-                    <td>{res.totalQuestions * 2} phút</td>
+                    <td>{res.exam?.durationMinutes ? `${res.exam.durationMinutes} phút` : `${res.totalQuestions * 2} phút`}</td>
                     {/* Cập nhật hiển thị điểm theo dạng X/Y */}
                     <td className="score-cell">
                       {res.correctCount}/{res.totalQuestions}

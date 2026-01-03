@@ -23,7 +23,6 @@ function Features() {
           <ul className="feature-list">
             <li>Hỗ trợ nhập từ File Word/Excel</li>
             <li>Trộn câu hỏi tự động</li>
-            <li>Chèn hình ảnh, công thức toán học dễ dàng</li>
           </ul>
         </div>
         <div className="feature-image">
@@ -36,13 +35,10 @@ function Features() {
           <div className="icon-wrapper icon-purple"></div>
           <h2>Tổ chức thi đấu trực tiếp</h2>
           <p>
-            Biến giờ kiểm tra căng thẳng thành trò chơi thú vị. Chế độ Live Quiz cho phép 
-            cả lớp cùng thi đấu, xem bảng xếp hạng thời gian thực và đua top.
+            Biến giờ kiểm tra căng thẳng thành trò chơi thú vị.
           </p>
           <ul className="feature-list">
             <li>Bảng xếp hạng thời gian thực</li>
-            <li>Âm nhạc và hiệu ứng sống động</li>
-            <li>Chế độ thi theo nhóm hoặc cá nhân</li>
           </ul>
         </div>
         <div className="feature-image">
@@ -67,31 +63,6 @@ function Features() {
         <div className="feature-image">
           <img src="https://img.freepik.com/free-vector/setup-analytics-concept-illustration_114360-1859.jpg" alt="Báo cáo kết quả" />
         </div>
-      </section>
-
-      {/* 3. Grid Features */}
-      <section className="features-grid-section">
-        <h2>Tính năng mở rộng</h2>
-        <div className="features-grid">
-          <div className="grid-item">
-            <h3>Đa nền tảng</h3>
-            <p>Hoạt động mượt mà trên điện thoại, máy tính bảng và laptop.</p>
-          </div>
-          <div className="grid-item">
-            <h3>Bảo mật cao</h3>
-            <p>Chống gian lận với tính năng xáo trộn và giám sát tab trình duyệt.</p>
-          </div>
-          <div className="grid-item">
-            <h3>Quản lý lớp học</h3>
-            <p>Dễ dàng chia nhóm, giao bài tập về nhà và theo dõi tiến độ.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. CTA Footer */}
-      <section className="features-cta">
-        <h2>Sẵn sàng trải nghiệm phương pháp học tập mới?</h2>
-        <button className="cta-button">Đăng ký miễn phí ngay</button>
       </section>
     </div>
   );
