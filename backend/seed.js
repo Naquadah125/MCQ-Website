@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
 // Import Models
-const User = require('./models/User');
+const User = require('./models/user');
 const Question = require('./models/Question');
 
 // Import Dữ liệu mẫu
