@@ -40,7 +40,7 @@ function StudentExams() {
     let filtered = exams;
     if (filterSubject !== 'All') {
       filtered = exams.filter(ex => 
-        ex.title.toLowerCase().includes(filterSubject.toLowerCase())
+        (ex.subject || '').toLowerCase() === filterSubject.toLowerCase()
       );
     }
 
@@ -67,6 +67,8 @@ function StudentExams() {
   };
 
   const sortedExams = getSortedExams();
+  // Build list of unique subjects from exams for the filter dropdown
+  const subjects = Array.from(new Set(exams.map(e => e.subject).filter(Boolean)));
 
   if (loading) return (
     <div className="student-exams-page">
@@ -121,7 +123,7 @@ function StudentExams() {
                     <td className="exam-title">{ex.title}</td>
                     <td>{new Date(ex.startTime).toLocaleString('vi-VN')}</td>
                     <td>{new Date(ex.endTime).toLocaleString('vi-VN')}</td>
-                    <td>{ex.questions?.length * 2 || 0} phút</td>
+                    <td>{ex.durationMinutes ? `${ex.durationMinutes} phút` : `${ex.questions?.length * 2 || 0} phút`}</td>
                     <td>
                       <span className={`status-badge ${ex.status}`}>
                         {isCompleted ? '✓ Đã hoàn thành' : isOngoing ? '● Đang diễn ra' : isFinished ? 'Đã kết thúc' : 'Sắp diễn ra'}

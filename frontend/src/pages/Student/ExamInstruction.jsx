@@ -56,7 +56,7 @@ function ExamInstruction() {
               </div>
               <div className="ins-item">
                 <span className="label">Thời gian làm bài</span>
-                <span className="value">{exam.questions.length * 2} phút</span>
+                <span className="value">{exam.durationMinutes ? `${exam.durationMinutes} phút` : `${exam.questions.length * 2} phút`}</span>
               </div>
               <div className="ins-item">
                 <span className="label">Hình thức</span>

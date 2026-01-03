@@ -23,16 +23,6 @@ function Navbar() {
               Tính năng
             </Link>
           </li>
-          <li>
-            <Link to="/history" className="nav-link">
-              Lịch sử
-            </Link>
-          </li>
-          <li>
-            <Link to="/contact" className="nav-link">
-              Liên hệ
-            </Link>
-          </li>
         </ul>
 
         <div className="navbar-buttons">

@@ -17,7 +17,10 @@ function TakeExam() {
         const found = data.find(ex => ex._id === id);
         if (found) {
           setExam(found);
-          setTimeLeft(found.questions.length * 120);
+          
+          // Logic mới: Lấy trực tiếp durationMinutes (phút) đổi ra giây
+          const seconds = (found.durationMinutes || 0) * 60;
+          setTimeLeft(seconds);
         }
         setLoading(false);
       })
@@ -25,12 +28,14 @@ function TakeExam() {
   }, [id]);
 
   useEffect(() => {
+    // Nếu hết giờ (timeLeft === 0) và đã load xong data thì nộp bài
     if (!loading && timeLeft > 0) {
       const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
       return () => clearInterval(timer);
     } else if (timeLeft === 0 && !loading && exam) {
       handleFinish();
     }
+    // eslint-disable-next-line
   }, [timeLeft, loading, exam]);
 
   const handleFinish = async () => {
@@ -43,7 +48,7 @@ function TakeExam() {
 
     const payload = {
       examId: id,
-      studentId: user.id || user._id, // Kiểm tra cả 2 trường hợp id
+      studentId: user.id || user._id,
       studentAnswers: answers
     };
 
@@ -76,6 +81,10 @@ function TakeExam() {
           <span>Thời gian còn lại</span>
           <div className={`time-display ${timeLeft < 60 ? 'warning' : ''}`}>
             {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+          </div>
+          <div className="time-info">
+             {/* Hiển thị tổng thời gian dựa trên durationMinutes */}
+            {exam.durationMinutes || 0} phút
           </div>
         </div>
         <div className="question-nav">
