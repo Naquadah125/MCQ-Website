@@ -8,13 +8,17 @@ import StudentOverview from './pages/Student/StudentOverview';
 import StudentNavbar from './components/StudentNavbar';
 import TeacherOverview from './pages/Teacher/TeacherOverview';
 import TeacherNavbar from './components/TeacherNavbar';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import CreateUser from './pages/admin/CreateUser';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import CreateUser from './pages/Admin/CreateUser';
+import AdminUsers from './pages/Admin/AdminUsers';
+import AdminExams from './pages/Admin/AdminExams';
+import AdminExamResults from './pages/Admin/AdminExamResults';
 import ProtectedRoute from './components/ProtectedRoute';
 import TeacherCreateSelection from './pages/Teacher/TeacherCreateSelection';
 import CreateQuestion from './pages/Teacher/CreateQuestion';
 import CreateExamFromBank from './pages/Teacher/CreateExamFromBank';
 import TeacherOrganizeSelection from './pages/Teacher/TeacherOrganizeSelection';
+import TeacherExamHistory from './pages/Teacher/TeacherExamHistory';
 import StudentExams from './pages/Student/StudentExams';
 import ExamInstruction from './pages/Student/ExamInstruction';
 import TakeExam from './pages/Student/TakeExam';
@@ -66,9 +70,14 @@ function App() {
         <Route path="/teacher/create" element={<ProtectedRoute allowedRole="teacher"><TeacherCreateSelection /></ProtectedRoute>} />
         <Route path="/teacher/create-question" element={<ProtectedRoute allowedRole="teacher"><CreateQuestion /></ProtectedRoute>} />
         <Route path="/teacher/create-exam" element={<ProtectedRoute allowedRole="teacher"><TeacherPlaceholder title="Tạo Bài Thi" /></ProtectedRoute>} />
+        <Route path="/teacher/history" element={<ProtectedRoute allowedRole="teacher"><TeacherExamHistory /></ProtectedRoute>} />
+
 
         <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/create-user" element={<ProtectedRoute allowedRole="admin"><CreateUser /></ProtectedRoute>} />
+        <Route path="/admin/users" element={<ProtectedRoute allowedRole="admin"><AdminUsers /></ProtectedRoute>} />
+        <Route path="/admin/exams" element={<ProtectedRoute allowedRole="admin"><AdminExams /></ProtectedRoute>} />
+        <Route path="/admin/exams/:id/results" element={<ProtectedRoute allowedRole="admin"><AdminExamResults /></ProtectedRoute>} />
       </Routes>
     </Router>
   );

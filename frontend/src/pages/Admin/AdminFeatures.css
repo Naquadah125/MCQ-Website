@@ -1,0 +1,79 @@
+/* Admin Features - styles aligned with project formatting */
+
+.admin-features {
+  background: transparent;
+  margin-top: 5px;
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.features-header {
+  font-size: 18px;
+  margin-bottom: 6px;
+  color: #111;
+}
+
+.features-desc {
+  color: #666;
+  margin-bottom: 18px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.feature-card {
+  background: #fff; /* changed to white to match features grid */
+  color: #111827;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(16, 24, 40, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-body h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.card-body p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 13px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 16px;
+}
+
+.btn-settings {
+  background: #fff;
+  border: 1px solid rgba(16, 24, 40, 0.06);
+  color: #111827;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-settings:hover {
+  background: #f3f4f6;
+}
+
+@media (max-width: 900px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}

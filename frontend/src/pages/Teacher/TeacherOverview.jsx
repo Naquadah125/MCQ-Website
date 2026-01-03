@@ -48,7 +48,7 @@ function TeacherOverview() {
       <TeacherNavbar />
       <div className="overview-container">
         <div className="overview-header">
-          <h1>Xin chào, {username}! 👨‍🏫</h1>
+          <h1>Xin chào, {username}!</h1>
           <p>Quản lý lớp học và bài thi của bạn</p>
         </div>
 

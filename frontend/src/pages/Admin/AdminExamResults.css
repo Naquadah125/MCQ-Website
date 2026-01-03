@@ -1,0 +1,45 @@
+.admin-results-container {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.btn-export {
+  background: #2d7aee;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.results-table th,
+.results-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f3f3f3;
+  text-align: left;
+}
+
+.results-table thead {
+  background: #fbfbfd;
+  font-weight: 600;
+}
+
+.results-table tr:hover {
+  background: #fafafa;
+}
+
+@media (max-width: 800px) {
+  .admin-results-container {
+    padding: 12px;
+  }
+}

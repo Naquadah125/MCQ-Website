@@ -38,16 +38,6 @@ function AdminNavbar() {
               Dashboard
             </Link>
           </li>
-          <li>
-            <Link to="/admin/create-user" className={isActive('/admin/create-user')}>
-              Tạo User
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/users" className={isActive('/admin/users')}>
-              Quản Lý User
-            </Link>
-          </li>
         </ul>
 
         <div 

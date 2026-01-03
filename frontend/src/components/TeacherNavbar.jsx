@@ -15,10 +15,7 @@ function TeacherNavbar() {
     }
   }, []);
 
-  const isActive = (path) => {
-    // Active khi đường dẫn bắt đầu bằng /teacher/create
-    return location.pathname.startsWith('/teacher/create') ? 'teacher-nav-link active' : 'teacher-nav-link';
-  };
+  const isActive = (path) => location.pathname.startsWith(path) ? 'teacher-nav-link active' : 'teacher-nav-link';
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -47,6 +44,11 @@ function TeacherNavbar() {
           <li>
             <Link to="/teacher/create" className={isActive('/teacher/create')}>
               Tạo mới
+            </Link>
+          </li>
+          <li>
+            <Link to="/teacher/history" className={location.pathname === '/teacher/history' ? 'teacher-nav-link active' : 'teacher-nav-link'}>
+              Lịch sử bài thi
             </Link>
           </li>
         </ul>

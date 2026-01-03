@@ -62,7 +62,7 @@ function CreateQuestion() {
       });
 
       if (response.ok) {
-        setMessage({ text: '🎉 Thêm câu hỏi thành công!', type: 'success' });
+        setMessage({ text: 'Thêm câu hỏi thành công!', type: 'success' });
         // Reset form (giữ lại môn và lớp để nhập tiếp)
         setFormData({
           ...formData,

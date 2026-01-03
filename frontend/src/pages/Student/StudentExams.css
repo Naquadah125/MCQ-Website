@@ -117,7 +117,7 @@
   border-radius: 6px;
   border: none;
   background-color: #00b894;
-  color: white;
+  color: rgb(0, 0, 0);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
