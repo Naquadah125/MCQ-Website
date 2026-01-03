@@ -38,7 +38,7 @@ function StudentHistory() {
       <StudentNavbar />
       <div className="history-container">
         <div className="history-header">
-          <h2>Lịch sử kết quả thi 📊</h2>
+          <h2>Lịch sử kết quả thi</h2>
         </div>
 
         <div className="table-wrapper">

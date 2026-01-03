@@ -1,0 +1,16 @@
+/* Admin Exams styles */
+.admin-exams-container { padding: 24px; max-width: 1100px; margin: 0 auto; }
+.exams-header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; }
+.exams-actions .btn-create { background:#2d7aee; color:white; padding:8px 12px; border-radius:8px; border:none; cursor:pointer; }
+.exams-filters { display:flex; gap:8px; margin-bottom:12px; }
+.exams-filters input, .exams-filters select { padding:8px 10px; border-radius:6px; border:1px solid #eee; }
+.exams-table { width:100%; border-collapse:collapse; background:white; border-radius:8px; overflow:hidden; }
+.exams-table th, .exams-table td { padding:12px 10px; text-align:left; border-bottom:1px solid #f3f3f3; }
+.exams-table thead { background:#fbfbfd; font-weight:600; }
+.exams-table tr:hover { background:#fafafa; }
+.exams-table .btn-delete { background:#ff6b6b; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; margin-left:6px; }
+.exams-table button { padding:6px 10px; border-radius:6px; border:1px solid #e6e6e6; background:white; cursor:pointer; }
+@media (max-width: 800px) {
+  .editor-grid, .admin-exams-container { padding: 12px; }
+  .exams-filters { flex-direction: column; }
+}

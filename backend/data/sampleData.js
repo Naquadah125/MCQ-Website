@@ -10,8 +10,13 @@ const users = [
     role: 'admin'
   },
   {
-    name: 'Học Sinh Test',
-    email: 'student@test.com',
+    name: 'Học Sinh A',
+    email: 'studentA@test.com',
+    role: 'student'
+  },
+  {
+    name: 'Học Sinh B',
+    email: 'studentB@test.com',
     role: 'student'
   }
 ];

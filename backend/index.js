@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const connectDB = require('./config/db');
 
 // Import Models
-const User = require('./models/user');
+const User = require('./models/User');
 const Profile = require('./models/Profile'); // MODEL MỚI
 const Question = require('./models/Question');
 const Exam = require('./models/Exam'); 
@@ -144,22 +144,47 @@ app.get('/api/questions', async (req, res) => {
   }
 });
 
-app.post('/api/exams', async (req, res) => {
+app.post('/api/exams', authorize(['teacher','admin']), async (req, res) => {
   try {
-    const { title, description, startTime, endTime, questionIds, creator } = req.body;
-    const selectedQuestions = await Question.find({ _id: { $in: questionIds } });
-    if (selectedQuestions.length === 0) {
-      return res.status(400).json({ message: 'Không tìm thấy câu hỏi nào được chọn' });
+    // Force creator to be the authenticated user for security
+    const creatorId = req.user && req.user.id ? req.user.id : req.body.creator;
+    const { title, description, startTime, endTime, questionIds, questions: providedQuestions, subject, grade, durationMinutes, passMark, randomizeQuestions, showAnswersAfterExam, status } = req.body;
+
+    let examQuestions = [];
+
+    // If questionIds provided, load from bank
+    if (questionIds && Array.isArray(questionIds) && questionIds.length > 0) {
+      const selectedQuestions = await Question.find({ _id: { $in: questionIds } });
+      if (selectedQuestions.length === 0) {
+        return res.status(400).json({ message: 'Không tìm thấy câu hỏi nào được chọn' });
+      }
+      examQuestions = selectedQuestions.map(q => ({
+        questionText: q.content,
+        options: q.options.map(opt => opt.text),
+        correctOption: q.correctAnswer === 'A' ? 0 : q.correctAnswer === 'B' ? 1 : q.correctAnswer === 'C' ? 2 : 3
+      }));
+    } else if (providedQuestions && Array.isArray(providedQuestions) && providedQuestions.length > 0) {
+      // Allow creating exam directly from provided question objects
+      examQuestions = providedQuestions.map(q => ({
+        questionText: q.questionText || q.content || '',
+        options: q.options || q.options || [],
+        correctOption: typeof q.correctOption === 'number' ? q.correctOption : 0
+      }));
+    } else {
+      return res.status(400).json({ message: 'Không tìm thấy câu hỏi nào để tạo bài thi' });
     }
-    const examQuestions = selectedQuestions.map(q => ({
-      questionText: q.content,
-      options: q.options.map(opt => opt.text),
-      correctOption: q.correctAnswer === 'A' ? 0 : q.correctAnswer === 'B' ? 1 : q.correctAnswer === 'C' ? 2 : 3
-    }));
+
     const newExam = new Exam({
       title,
       description,
-      creator,
+      creator: creatorId,
+      subject,
+      grade,
+      durationMinutes,
+      passMark,
+      randomizeQuestions,
+      showAnswersAfterExam,
+      status,
       startTime,
       endTime,
       questions: examQuestions
@@ -173,10 +198,56 @@ app.post('/api/exams', async (req, res) => {
 
 app.get('/api/exams', async (req, res) => {
   try {
-    const exams = await Exam.find().sort({ startTime: 1 });
+    const { subject, grade, status, title } = req.query;
+    let filter = {};
+    if (subject) filter.subject = subject;
+    if (grade) filter.grade = grade;
+    if (status) filter.status = status;
+    if (title) filter.title = { $regex: title, $options: 'i' };
+
+    const exams = await Exam.find(filter).sort({ startTime: 1 });
     res.json(exams);
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách bài thi' });
+  }
+});
+
+// Teacher-specific exam routes removed: exam management is admin-only now.
+
+// Admin-specific exam endpoints
+app.get('/api/exams/:id', authorize(['teacher','admin']), async (req, res) => {
+  try {
+    const exam = await Exam.findById(req.params.id);
+    if (!exam) return res.status(404).json({ message: 'Không tìm thấy bài thi' });
+    res.json(exam);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy bài thi' });
+  }
+});
+
+app.put('/api/admin/exams/:id', authorize(['teacher','admin']), async (req, res) => {
+  try {
+    const updates = req.body;
+    if (updates.questionIds) {
+      const selectedQuestions = await Question.find({ _id: { $in: updates.questionIds } });
+      updates.questions = selectedQuestions.map(q => ({ questionText: q.content, options: q.options.map(opt => opt.text), correctOption: q.correctAnswer === 'A' ? 0 : q.correctAnswer === 'B' ? 1 : q.correctAnswer === 'C' ? 2 : 3 }));
+      delete updates.questionIds;
+    }
+    const exam = await Exam.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
+    if (!exam) return res.status(404).json({ message: 'Không tìm thấy bài thi' });
+    res.json({ message: 'Cập nhật bài thi thành công', exam });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi cập nhật bài thi', error: err.message });
+  }
+});
+
+app.delete('/api/admin/exams/:id', authorize(['teacher','admin']), async (req, res) => {
+  try {
+    const deleted = await Exam.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: 'Không tìm thấy bài thi' });
+    res.json({ message: 'Xóa bài thi thành công' });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi xóa bài thi' });
   }
 });
 
@@ -262,6 +333,66 @@ app.get('/api/teacher/stats', async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi lấy thống kê giáo viên' });
+  }
+});
+
+// Thống kê admin (Tổng người dùng / theo role / tổng bài thi)
+app.get('/api/admin/stats', async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalTeachers = await User.countDocuments({ role: 'teacher' });
+    const totalStudents = await User.countDocuments({ role: 'student' });
+    const totalExams = await Exam.countDocuments();
+
+    res.json({
+      totalUsers,
+      totalTeachers,
+      totalStudents,
+      totalExams
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi lấy thống kê admin' });
+  }
+});
+
+// Admin users list & delete
+app.get('/api/admin/users', authorize(['admin']), async (req, res) => {
+  try {
+    const users = await User.find({}, 'name email role createdAt').sort({ createdAt: -1 });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy danh sách người dùng' });
+  }
+});
+
+app.delete('/api/admin/users/:id', authorize(['admin']), async (req, res) => {
+  try {
+    const deleted = await User.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+    res.json({ message: 'Xóa người dùng thành công' });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi xóa người dùng' });
+  }
+});
+
+// Đặt lại mật khẩu cho user (admin only)
+app.put('/api/admin/users/:id/reset-password', authorize(['admin']), async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) return res.status(400).json({ message: 'Vui lòng cung cấp mật khẩu mới' });
+
+    const salt = await bcrypt.genSalt(10);
+    const hashed = await bcrypt.hash(password, salt);
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+
+    user.password = hashed;
+    await user.save();
+
+    res.json({ message: 'Đặt lại mật khẩu thành công' });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi đặt lại mật khẩu' });
   }
 });
 

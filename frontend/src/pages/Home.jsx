@@ -23,12 +23,12 @@ function Home() {
               <span className="tag">☁️ Cung cấp tài nguyên học sinh</span>
             </div>
             <div className="tag-row">
-              <span className="tag">📝 Khai thác học liệu</span>
-              <span className="tag">⚡ Giao bài tập</span>
-              <span className="tag">📂 Thi trực tuyến</span>
+              <span className="tag">Khai thác học liệu</span>
+              <span className="tag">Giao bài tập</span>
+              <span className="tag">Thi trực tuyến</span>
             </div>
             <div className="tag-row">
-              <span className="tag">🎓 Lớp học trực tuyến</span>
+              <span className="tag">Lớp học trực tuyến</span>
               <span className="tag">Tp Tạo nhiệm vụ học tập</span>
             </div>
           </div>
@@ -42,8 +42,8 @@ function Home() {
             className="main-img"
           />
           
-          <div className="floating-icon icon-1">📚</div>
-          <div className="floating-icon icon-2">✅</div>
+          <div className="floating-icon icon-1"></div>
+          <div className="floating-icon icon-2"></div>
         </div>
       </div>
     </div>

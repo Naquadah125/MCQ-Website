@@ -80,7 +80,7 @@ function StudentExams() {
       <StudentNavbar />
       <div className="exams-container">
         <div className="exams-header">
-          <h2>Danh sách kỳ thi 📝</h2>
+          <h2>Danh sách kỳ thi</h2>
           <div className="filter-section">
             <select 
               value={filterSubject} 

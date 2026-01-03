@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TeacherNavbar from '../../components/TeacherNavbar';
+import './CreateExamFromBank.css';
 
 function CreateExamFromBank() {
   const navigate = useNavigate();
@@ -8,32 +9,62 @@ function CreateExamFromBank() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // State cho bộ lọc
   const [filterSubject, setFilterSubject] = useState('All');
   const [filterDifficulty, setFilterDifficulty] = useState('All');
+  const [filterGrade, setFilterGrade] = useState('All');
   
   const [examInfo, setExamInfo] = useState({
     title: '',
     description: '',
+    subject: '',
+    grade: '',
+    durationMinutes: 45,
+    passMark: 5,
     startTime: '',
-    endTime: ''
+    endTime: '',
+    randomizeQuestions: false,
+    showAnswersAfterExam: false
   });
 
   useEffect(() => {
-    fetch('http://localhost:5001/api/questions')
-      .then(res => res.json())
-      .then(data => {
-        setQuestions(data);
-        setLoading(false);
-      })
-      .catch(err => console.error("Lỗi tải câu hỏi:", err));
+    fetchQuestions();
   }, []);
 
-  // Hàm xử lý lọc danh sách
+  // Nếu Giáo viên đã chọn môn trong phần cấu hình bài thi, khóa bộ lọc ngân hàng vào môn đó
+  useEffect(() => {
+    if (examInfo.subject && examInfo.subject !== '') {
+      setFilterSubject(examInfo.subject);
+    } else {
+      setFilterSubject('All');
+    }
+  }, [examInfo.subject]);
+
+  // Khóa bộ lọc khối lớp nếu đã chọn trong cấu hình bài thi
+  useEffect(() => {
+    if (examInfo.grade && examInfo.grade !== '') {
+      setFilterGrade(examInfo.grade);
+    } else {
+      setFilterGrade('All');
+    }
+  }, [examInfo.grade]);
+
+  const fetchQuestions = async () => {
+    try {
+      const res = await fetch('http://localhost:5001/api/questions');
+      const data = await res.json();
+      setQuestions(data);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
+
   const filteredQuestions = questions.filter(q => {
     const matchSubject = filterSubject === 'All' || q.subject === filterSubject;
     const matchDifficulty = filterDifficulty === 'All' || q.difficulty === filterDifficulty;
-    return matchSubject && matchDifficulty;
+    const matchGrade = filterGrade === 'All' || q.grade === filterGrade;
+    return matchSubject && matchDifficulty && matchGrade;
   });
 
   const handleCheckboxChange = (id) => {
@@ -44,135 +75,267 @@ function CreateExamFromBank() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (selectedIds.length === 0) return alert("Vui lòng chọn ít nhất 1 câu hỏi!");
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-    const payload = { ...examInfo, questionIds: selectedIds, creator: user?.id };
+    
+    if (!examInfo.title) return alert('Vui lòng nhập tiêu đề bài thi');
+    if (!examInfo.startTime || !examInfo.endTime) return alert('Vui lòng chọn thời gian bắt đầu và kết thúc');
+    if (selectedIds.length === 0) return alert('Vui lòng chọn ít nhất 1 câu hỏi từ ngân hàng!');
+
+    const token = localStorage.getItem('token');
+
+    const selectedQuestionsData = questions
+      .filter(q => selectedIds.includes(q._id))
+      .map(q => ({
+        questionText: q.content,
+        options: q.options.map(opt => opt.text || opt), 
+        correctOption: ['A', 'B', 'C', 'D'].indexOf(q.correctAnswer)
+      }));
+
+    const payload = {
+      ...examInfo,
+      questions: selectedQuestionsData
+    };
+
     try {
       const res = await fetch('http://localhost:5001/api/exams', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': token ? `Bearer ${token}` : '' 
+        },
         body: JSON.stringify(payload)
       });
+
       if (res.ok) {
+        const data = await res.json();
         alert("Tạo bài thi thành công!");
-        navigate('/teacher');
+        // Chuyển về trang lịch sử và truyền examId vừa tạo để auto chọn
+        navigate('/teacher/history', { state: { selectedExamId: data.examId } });
+      } else {
+        const errData = await res.json();
+        alert(`Lỗi: ${errData.message || 'Không thể tạo bài thi'}`);
       }
-    } catch (err) { alert("Lỗi kết nối!"); }
+    } catch (err) { 
+      alert("Lỗi kết nối đến server!"); 
+    }
   };
 
   return (
     <div className="teacher-bg">
       <TeacherNavbar />
-      <div style={{ padding: '30px', maxWidth: '1200px', margin: '0 auto' }}>
-        <h2 style={{ marginBottom: '20px' }}>Tạo bài thi từ Ngân hàng</h2>
+      <div className="create-exam-container">
+        <div className="page-header">
+          <h2>Tạo Bài Thi Từ Ngân Hàng</h2>
+        </div>
         
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '30px' }}>
-          {/* Cột trái: Form thông tin bài thi (Giữ nguyên) */}
-          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', height: 'fit-content', position: 'sticky', top: '90px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Tên bài thi</label>
-              <input type="text" required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
-                onChange={e => setExamInfo({...examInfo, title: e.target.value})} />
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Mô tả</label>
-              <textarea rows="3" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
-                onChange={e => setExamInfo({...examInfo, description: e.target.value})}></textarea>
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Bắt đầu</label>
-              <input type="datetime-local" required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
-                onChange={e => setExamInfo({...examInfo, startTime: e.target.value})} />
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Kết thúc</label>
-              <input type="datetime-local" required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
-                onChange={e => setExamInfo({...examInfo, endTime: e.target.value})} />
-            </div>
-            <p style={{ color: '#00b894', fontWeight: 'bold' }}>Đã chọn: {selectedIds.length} câu</p>
-            <button type="submit" style={{ width: '100%', padding: '12px', background: '#00b894', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-              XÁC NHẬN TẠO BÀI
-            </button>
-          </div>
+        <form onSubmit={handleSubmit} className="exam-layout">
+          <div className="settings-card">
+            <h3 className="card-title">Cấu hình bài thi</h3>
 
-          {/* Cột phải: Danh sách câu hỏi có Filter */}
-          <div style={{ background: 'white', padding: '25px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '15px' }}>
-              <h3 style={{ margin: 0 }}>Chọn câu hỏi</h3>
-              
-              {/* Filter Dropdowns nằm bên phải */}
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <select 
-                  value={filterSubject} 
-                  onChange={(e) => setFilterSubject(e.target.value)}
-                  style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
+            <div className="form-group">
+              <label className="form-label">Tiêu đề bài thi</label>
+              <input 
+                required 
+                type="text" 
+                placeholder="Ví dụ: Kiểm tra 1 tiết Toán 12" 
+                className="form-control"
+                value={examInfo.title} 
+                onChange={e => setExamInfo({...examInfo, title: e.target.value})} 
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Mô tả / Ghi chú</label>
+              <textarea 
+                className="form-control"
+                placeholder="Nhập hướng dẫn làm bài..." 
+                value={examInfo.description} 
+                onChange={e => setExamInfo({...examInfo, description: e.target.value})}
+              ></textarea>
+            </div>
+
+            <div className="row-2-col">
+              <div className="form-group">
+                <label className="form-label">Môn học</label>
+                <select
+                  className="form-control"
+                  value={examInfo.subject}
+                  onChange={e => setExamInfo({...examInfo, subject: e.target.value})}
                 >
-                  <option value="All">Tất cả môn</option>
+                  <option value="">Chọn môn</option>
                   <option value="Toán">Toán</option>
                   <option value="Vật Lý">Vật Lý</option>
                   <option value="Hóa Học">Hóa Học</option>
+                  <option value="Văn">Văn</option>
+                  <option value="Sử">Sử</option>
+                  <option value="Địa">Địa</option>
                   <option value="Tiếng Anh">Tiếng Anh</option>
+                  <option value="Sinh Học">Sinh Học</option>
                 </select>
-
-                <select 
-                  value={filterDifficulty} 
-                  onChange={(e) => setFilterDifficulty(e.target.value)}
-                  style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
+              </div>
+              <div className="form-group">
+                <label className="form-label">Khối lớp</label>
+                <select
+                  className="form-control"
+                  value={examInfo.grade}
+                  onChange={e => setExamInfo({...examInfo, grade: e.target.value})}
                 >
-                  <option value="All">Tất cả độ khó</option>
-                  <option value="easy">Dễ</option>
-                  <option value="medium">Trung bình</option>
-                  <option value="hard">Khó</option>
+                  <option value="">Chọn khối</option>
+                  <option value="10">Khối 10</option>
+                  <option value="11">Khối 11</option>
+                  <option value="12">Khối 12</option>
                 </select>
               </div>
             </div>
 
-            {loading ? <p>Đang tải câu hỏi...</p> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="row-2-col">
+              <div className="form-group">
+                <label className="form-label">Thời gian (phút)</label>
+                <input 
+                  type="number" 
+                  min={1} 
+                  className="form-control"
+                  value={examInfo.durationMinutes} 
+                  onChange={e => setExamInfo({...examInfo, durationMinutes: Number(e.target.value)})} 
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Điểm đạt</label>
+                <input 
+                  type="number" 
+                  min={0} 
+                  className="form-control"
+                  value={examInfo.passMark} 
+                  onChange={e => setExamInfo({...examInfo, passMark: Number(e.target.value)})} 
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Thời gian mở đề</label>
+              <input 
+                type="datetime-local" 
+                required
+                className="form-control"
+                value={examInfo.startTime} 
+                onChange={e => setExamInfo({...examInfo, startTime: e.target.value})} 
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Thời gian đóng đề</label>
+              <input 
+                type="datetime-local" 
+                required
+                className="form-control"
+                value={examInfo.endTime} 
+                onChange={e => setExamInfo({...examInfo, endTime: e.target.value})} 
+              />
+            </div>
+
+            <div className="checkbox-group">
+              <label className="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  checked={examInfo.randomizeQuestions} 
+                  onChange={e => setExamInfo({...examInfo, randomizeQuestions: e.target.checked})} 
+                /> 
+                Đảo ngẫu nhiên câu hỏi
+              </label>
+              <label className="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  checked={examInfo.showAnswersAfterExam} 
+                  onChange={e => setExamInfo({...examInfo, showAnswersAfterExam: e.target.checked})} 
+                /> 
+                Hiển thị đáp án sau khi nộp
+              </label>
+            </div>
+
+            <button type="submit" className="btn-submit">TẠO BÀI THI</button>
+          </div>
+
+          <div className="bank-card">
+            <div className="bank-header">
+              <h3 className="card-title" style={{marginBottom:0, border: 'none'}}>
+                Ngân hàng câu hỏi ({questions.length})
+              </h3>
+              <div style={{fontWeight: 600, color: '#00b894'}}>
+                Đã chọn: {selectedIds.length}
+              </div>
+            </div>
+
+            <div className="bank-filters">
+              <select 
+                className="filter-select"
+                value={filterSubject} 
+                onChange={e => setFilterSubject(e.target.value)} 
+                disabled={loading || !!examInfo.subject}
+              >
+                <option value="All">Tất cả môn</option>
+                <option value="Toán">Toán</option>
+                <option value="Vật Lý">Vật Lý</option>
+                <option value="Hóa Học">Hóa Học</option>
+                <option value="Văn">Văn</option>
+                <option value="Sử">Sử</option>
+                <option value="Địa">Địa</option>
+                <option value="Tiếng Anh">Tiếng Anh</option>
+                <option value="Sinh Học">Sinh Học</option>
+              </select>
+              <select
+                className="filter-select"
+                value={filterGrade}
+                onChange={e => setFilterGrade(e.target.value)}
+                disabled={loading || !!examInfo.grade}
+              >
+                <option value="All">Tất cả khối</option>
+                <option value="10">Khối 10</option>
+                <option value="11">Khối 11</option>
+                <option value="12">Khối 12</option>
+              </select>
+              <select 
+                className="filter-select"
+                value={filterDifficulty} 
+                onChange={e => setFilterDifficulty(e.target.value)} 
+                disabled={loading}
+              >
+                <option value="All">Tất cả độ khó</option>
+                <option value="easy">Dễ</option>
+                <option value="medium">Trung bình</option>
+                <option value="hard">Khó</option>
+              </select>
+            </div>
+
+            {loading ? (
+              <div className="loading-spinner">Đang tải câu hỏi...</div>
+            ) : (
+              <div className="question-list">
                 {filteredQuestions.length > 0 ? (
-                  filteredQuestions.map((q) => (
+                  filteredQuestions.map(q => (
                     <div 
                       key={q._id} 
-                      style={{ 
-                        display: 'flex', 
-                        gap: '15px', 
-                        padding: '15px', 
-                        border: '1px solid #eee', 
-                        borderRadius: '10px', 
-                        background: selectedIds.includes(q._id) ? '#f0fff4' : 'white',
-                        transition: '0.2s',
-                        cursor: 'pointer'
-                      }}
+                      className={`question-item ${selectedIds.includes(q._id) ? 'selected' : ''}`}
                       onClick={() => handleCheckboxChange(q._id)}
                     >
                       <input 
                         type="checkbox" 
-                        style={{ width: '18px', cursor: 'pointer' }} 
-                        checked={selectedIds.includes(q._id)}
-                        readOnly
+                        className="q-checkbox"
+                        checked={selectedIds.includes(q._id)} 
+                        readOnly 
                       />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                          <span style={{ fontSize: '11px', background: '#e6f0ff', color: '#0066ff', padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>
-                            {q.subject}
-                          </span>
-                          <span style={{ 
-                            fontSize: '11px', 
-                            background: q.difficulty === 'easy' ? '#dcfce7' : q.difficulty === 'hard' ? '#fee2e2' : '#fef9c3', 
-                            color: q.difficulty === 'easy' ? '#15803d' : q.difficulty === 'hard' ? '#b91c1c' : '#854d0e', 
-                            padding: '2px 8px', 
-                            borderRadius: '4px',
-                            fontWeight: '600'
-                          }}>
-                            {q.difficulty}
-                          </span>
+                      <div className="q-content">
+                        <div className="q-tags">
+                          <span className="tag subject">{q.subject}</span>
+                          <span className="tag grade">{q.grade ? `K${q.grade}` : ''}</span>
+                          <span className={`tag ${q.difficulty}`}>{q.difficulty}</span>
                         </div>
-                        <p style={{ margin: 0, color: '#333', fontWeight: '500', lineHeight: '1.4' }}>{q.content}</p>
+                        <div className="q-text">{q.content}</div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p style={{ textAlign: 'center', color: '#999', padding: '20px' }}>Không tìm thấy câu hỏi phù hợp.</p>
+                  <div style={{textAlign: 'center', padding: '20px', color: '#6b7280'}}>
+                    Không tìm thấy câu hỏi phù hợp.
+                  </div>
                 )}
               </div>
             )}
