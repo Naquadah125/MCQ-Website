@@ -34,3 +34,20 @@ test chức năng:
 
 
 để chạy backend(terminal riêng)
+
+---
+
+## Environment variables ✅
+
+Copy `backend/.env.example` to the project root as `.env` (the backend loads environment variables from `../.env`).
+
+Example `.env` values:
+
+```
+PORT=5001
+MONGODB_URI=mongodb://localhost:27017/mcq_db
+JWT_SECRET=your_jwt_secret_here
+NODE_ENV=development
+```
+
+Keep `JWT_SECRET` secret in production and replace `MONGODB_URI` with your hosted database URI.
