@@ -62,24 +62,21 @@ function CreateExamFromBank() {
 
   const fetchQuestions = async () => {
     try {
-      // If the teacher imported questions in the browser, prefer those
-      const imported = localStorage.getItem('importedQuestions');
-      if (imported) {
-        try {
+      // Read imported questions if present, but do NOT override the main bank automatically.
+      // We will show a banner letting teacher choose to use or clear imported set.
+      try {
+        const imported = localStorage.getItem('importedQuestions');
+        if (imported) {
           const parsed = JSON.parse(imported);
           if (Array.isArray(parsed) && parsed.length) {
-            setQuestions(parsed);
-            // try to read meta
-            try {
-              const meta = JSON.parse(localStorage.getItem('importedMeta') || 'null');
-              if (meta) setImportedSource(meta);
-            } catch (e) { /* ignore */ }
-            setLoading(false);
-            return;
+            setImportedSource(JSON.parse(localStorage.getItem('importedMeta') || 'null'));
+            // store parsed in a ref-like state (questionsImported) by not setting questions yet
+            // We'll let the user choose to apply it via UI
+            // Keep going to fetch the full bank
           }
-        } catch (e) {
-          console.error('Imported questions malformed', e);
         }
+      } catch (e) {
+        console.error('Imported questions malformed', e);
       }
 
       const res = await fetch('http://localhost:5001/api/questions');
@@ -292,14 +289,41 @@ function CreateExamFromBank() {
                 Ngân hàng câu hỏi ({questions.length})
               </h3>
               <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
-                {importedSource ? (
-                  <div style={{fontSize: 13, color: '#6b7280'}}>Nguồn import: {importedSource.fileName} — Khối {importedSource.grade} / {importedSource.subject}</div>
-                ) : null}
                 <div style={{fontWeight: 600, color: '#00b894', marginTop: 6}}>
                   Đã chọn: {selectedIds.length}
                 </div>
               </div>
             </div>
+
+            {/* Nếu có bộ import trong localStorage, hiển thị banner để cho giáo viên quyết định */}
+            {importedSource ? (
+              <div className="import-banner">
+                <div style={{flex: 1}}>
+                  <strong>Nguồn import:</strong> {importedSource.fileName} — Khối {importedSource.grade} / {importedSource.subject}
+                  <div style={{color: '#6b7280', marginTop: 6}}>Hệ thống tìm thấy bộ câu hỏi được import trong trình duyệt. Bạn có thể sử dụng bộ này tạm thời hoặc xóa nó để truy cập toàn bộ ngân hàng câu hỏi.</div>
+                </div>
+                <div style={{display: 'flex', gap: 8}}>
+                  <button className="btn-ghost" onClick={async () => {
+                    // Apply imported questions into the view
+                    try {
+                      const parsed = JSON.parse(localStorage.getItem('importedQuestions') || '[]');
+                      if (Array.isArray(parsed) && parsed.length) {
+                        setQuestions(parsed);
+                        // clear selectedIds because ids are synthetic (imp-...)
+                        setSelectedIds([]);
+                      }
+                    } catch (e) { console.error('Apply import failed', e); }
+                  }}>Sử dụng bộ import</button>
+                  <button className="btn-danger" onClick={() => {
+                    localStorage.removeItem('importedQuestions');
+                    localStorage.removeItem('importedMeta');
+                    setImportedSource(null);
+                    // refetch full bank
+                    fetchQuestions();
+                  }}>Xóa import</button>
+                </div>
+              </div>
+            ) : null}
 
             <div className="bank-filters">
               <select 

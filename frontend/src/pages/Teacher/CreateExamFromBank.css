@@ -233,3 +233,34 @@ textarea.form-control {
     position: static;
   }
 }
+
+/* Banner shown when there's an imported question set present in localStorage */
+.import-banner {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px dashed #d1d5db;
+  background: #fffaf0;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-ghost {
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-danger {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-danger:hover { opacity: 0.95 }

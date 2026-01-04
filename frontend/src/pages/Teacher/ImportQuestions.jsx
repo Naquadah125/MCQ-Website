@@ -144,7 +144,6 @@ function ImportQuestions() {
       <div className="create-exam-container">
         <div className="page-header">
           <h2>Import Câu Hỏi (CSV)</h2>
-          <p>File CSV phải có header: <code>grade,class,difficulty,subject,question,A,B,C,D,answer,explanation</code>. Tất cả dòng phải có cùng <strong>grade</strong>, cùng <strong>class</strong> và cùng <strong>subject</strong>.</p>
         </div>
 
         <div style={{ maxWidth: 900, margin: '0 auto' }}>

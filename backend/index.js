@@ -332,12 +332,13 @@ app.post('/api/exams', authorize(['teacher','admin']), async (req, res) => {
 
 app.get('/api/exams', async (req, res) => {
   try {
-    const { subject, grade, status, title } = req.query;
+    const { subject, grade, status, title, creator } = req.query;
     let filter = {};
     if (subject) filter.subject = subject;
     if (grade) filter.grade = grade;
     if (status) filter.status = status;
     if (title) filter.title = { $regex: title, $options: 'i' };
+    if (creator) filter.creator = creator; // allow filtering by creator id (useful for teacher history)
 
     const exams = await Exam.find(filter).sort({ startTime: 1 });
     res.json(exams);
