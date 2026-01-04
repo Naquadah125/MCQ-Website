@@ -67,6 +67,9 @@ function TeacherNavbar() {
 
           {showDropdown && (
             <div className="dropdown-menu">
+              <div className="dropdown-item" onClick={() => navigate('/teacher/profile-edit')}>
+                Chỉnh sửa thông tin
+              </div>
               <div className="dropdown-item" onClick={handleLogout}>
                 Đăng xuất
               </div>
