@@ -95,7 +95,10 @@ function TeacherExamHistory() {
                 <option key={ex._id} value={ex._id}>{ex.title} ({new Date(ex.startTime).toLocaleDateString('vi-VN')})</option>
               ))}
             </select>
-            <button className="btn-export" onClick={exportCSV} disabled={!results.length}>Export CSV</button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="btn-refresh" onClick={() => fetchResults(selectedExamId)} disabled={!selectedExamId}>Làm mới</button>
+              <button className="btn-export" onClick={exportCSV} disabled={!results.length}>Export CSV</button>
+            </div>
           </div>
         )}
 

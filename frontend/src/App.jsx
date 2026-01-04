@@ -20,12 +20,14 @@ import ProtectedRoute from './components/ProtectedRoute';
 import TeacherCreateSelection from './pages/Teacher/TeacherCreateSelection';
 import CreateQuestion from './pages/Teacher/CreateQuestion';
 import CreateExamFromBank from './pages/Teacher/CreateExamFromBank';
+import ImportQuestions from './pages/Teacher/ImportQuestions';
 import TeacherOrganizeSelection from './pages/Teacher/TeacherOrganizeSelection';
 import TeacherExamHistory from './pages/Teacher/TeacherExamHistory';
 import StudentExams from './pages/Student/StudentExams';
 import ExamInstruction from './pages/Student/ExamInstruction';
 import TakeExam from './pages/Student/TakeExam';
 import StudentHistory from './pages/Student/StudentHistory';
+import ReviewExam from './pages/Student/ReviewExam';
 import ProfileEdit from './pages/ProfileEdit';
 import './App.css';
 
@@ -67,10 +69,12 @@ function App() {
         
         {/* Route dự phòng cho trang làm bài */}
         <Route path="/student/take-exam/:id" element={<ProtectedRoute allowedRole="student"><TakeExam /></ProtectedRoute>} />
+        <Route path="/student/review/:id" element={<ProtectedRoute allowedRole="student"><ReviewExam /></ProtectedRoute>} />
 
         <Route path="/teacher" element={<ProtectedRoute allowedRole="teacher"><TeacherOverview /></ProtectedRoute>} />
         <Route path="/teacher/organize" element={<ProtectedRoute allowedRole="teacher"><TeacherOrganizeSelection /></ProtectedRoute>} />
         <Route path="/teacher/organize/bank" element={<ProtectedRoute allowedRole="teacher"><CreateExamFromBank /></ProtectedRoute>} />
+        <Route path="/teacher/import" element={<ProtectedRoute allowedRole="teacher"><ImportQuestions /></ProtectedRoute>} />
         <Route path="/teacher/create" element={<ProtectedRoute allowedRole="teacher"><TeacherCreateSelection /></ProtectedRoute>} />
         <Route path="/teacher/create-question" element={<ProtectedRoute allowedRole="teacher"><CreateQuestion /></ProtectedRoute>} />
         <Route path="/teacher/create-exam" element={<ProtectedRoute allowedRole="teacher"><TeacherPlaceholder title="Tạo Bài Thi" /></ProtectedRoute>} />

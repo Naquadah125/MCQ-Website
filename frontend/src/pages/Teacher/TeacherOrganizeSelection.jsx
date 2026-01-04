@@ -23,11 +23,11 @@ function TeacherOrganizeSelection() {
             <button className="btn-select">Chọn ngay</button>
           </div>
 
-          <div className="selection-card disabled">
+          <div className="selection-card" onClick={() => navigate('/teacher/import')}>
             <div className="card-icon"></div>
-            <h3>Tự Import (Sắp có)</h3>
+            <h3>Tự Import</h3>
             <p>Tải lên file câu hỏi hoặc nhập thủ công từng câu ngay tại đây.</p>
-            <button className="btn-select secondary" disabled>Sắp ra mắt</button>
+            <button className="btn-select">Bắt đầu</button>
           </div>
         </div>
       </div>

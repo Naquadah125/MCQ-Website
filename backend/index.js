@@ -109,14 +109,48 @@ app.get('/api/profile/me', authorize(), async (req, res) => {
 // --- 3. CẬP NHẬT THÔNG TIN CÁ NHÂN ---
 app.put('/api/profile/me', authorize(), async (req, res) => {
     try {
-        const updates = req.body;
+        const updates = req.body || {};
+
+    // If client provided a top-level `name` or `fullName`, ensure the User.name
+    // is updated and normalize it to `fullName` for the Profile document.
+    if (updates.name || updates.fullName) {
+      const newName = updates.name || updates.fullName;
+      try {
+        await User.findByIdAndUpdate(req.user.id, { $set: { name: newName } });
+      } catch (e) {
+        console.error('Failed to update user name:', e);
+        return res.status(500).json({ message: 'Lỗi khi cập nhật tên người dùng' });
+      }
+      updates.fullName = newName;
+      delete updates.name; // keep profile field consistent
+    }
+
+    // Những trường không cho phép cập nhật từ client qua trang chỉnh sửa này
+    const forbidden = ['address', 'bio', 'studentId', 'class'];
+    forbidden.forEach(f => delete updates[f]);
+
+        // Nếu gửi password mới thì cập nhật vào User (hash trước khi lưu)
+        if (updates.password) {
+            try {
+                const salt = await bcrypt.genSalt(10);
+                const hashed = await bcrypt.hash(updates.password, salt);
+                await User.findByIdAndUpdate(req.user.id, { $set: { password: hashed } });
+                // remove password so it won't be saved into Profile
+                delete updates.password;
+            } catch (e) {
+                console.error('Failed to update password:', e);
+                return res.status(500).json({ message: 'Lỗi khi cập nhật mật khẩu' });
+            }
+        }
+
         const profile = await Profile.findOneAndUpdate(
             { user: req.user.id },
             { $set: updates },
-            { new: true }
+            { new: true, upsert: true }
         );
         res.json({ message: 'Cập nhật thành công', profile });
     } catch (err) {
+        console.error('Profile update failed:', err);
         res.status(500).json({ message: 'Lỗi cập nhật hồ sơ' });
     }
 });
@@ -434,6 +468,18 @@ app.get('/api/results/student/:studentId', async (req, res) => {
   }
 });
 
+// Get single result by id (include full exam details for review)
+app.get('/api/results/:id', async (req, res) => {
+  try {
+    const resultId = req.params.id;
+    const result = await Result.findById(resultId).populate('exam');
+    if (!result) return res.status(404).json({ message: 'Không tìm thấy kết quả' });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy kết quả' });
+  }
+});
+
 // Thống kê & Bài thi gần đây (Giữ nguyên)
 app.get('/api/teacher/stats', async (req, res) => {
   try {
@@ -510,6 +556,18 @@ app.put('/api/admin/users/:id', authorize(['admin']), async (req, res) => {
     if (name) user.name = name;
     if (email) user.email = email;
     if (role) user.role = role;
+
+    // Nếu gửi password trong payload, cập nhật mật khẩu (hash trước khi lưu)
+    if (req.body.password) {
+      try {
+        const salt = await bcrypt.genSalt(10);
+        const hashed = await bcrypt.hash(req.body.password, salt);
+        user.password = hashed;
+      } catch (e) {
+        console.error('Failed to hash password for admin update:', e);
+        return res.status(500).json({ message: 'Lỗi khi cập nhật mật khẩu' });
+      }
+    }
 
     await user.save();
 

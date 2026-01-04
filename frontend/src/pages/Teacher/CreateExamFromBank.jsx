@@ -12,6 +12,7 @@ function CreateExamFromBank() {
   const [filterSubject, setFilterSubject] = useState('All');
   const [filterDifficulty, setFilterDifficulty] = useState('All');
   const [filterGrade, setFilterGrade] = useState('All');
+  const [importedSource, setImportedSource] = useState(null);
   
   const [examInfo, setExamInfo] = useState({
     title: '',
@@ -48,8 +49,39 @@ function CreateExamFromBank() {
     }
   }, [examInfo.grade]);
 
+  // Nếu giáo viên vừa import câu hỏi, tự động điền môn và khối lớp từ dữ liệu import
+  useEffect(() => {
+    if (importedSource) {
+      setExamInfo(prev => ({
+        ...prev,
+        subject: importedSource.subject || prev.subject,
+        grade: importedSource.grade || prev.grade
+      }));
+    }
+  }, [importedSource]);
+
   const fetchQuestions = async () => {
     try {
+      // If the teacher imported questions in the browser, prefer those
+      const imported = localStorage.getItem('importedQuestions');
+      if (imported) {
+        try {
+          const parsed = JSON.parse(imported);
+          if (Array.isArray(parsed) && parsed.length) {
+            setQuestions(parsed);
+            // try to read meta
+            try {
+              const meta = JSON.parse(localStorage.getItem('importedMeta') || 'null');
+              if (meta) setImportedSource(meta);
+            } catch (e) { /* ignore */ }
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.error('Imported questions malformed', e);
+        }
+      }
+
       const res = await fetch('http://localhost:5001/api/questions');
       const data = await res.json();
       setQuestions(data);
@@ -259,8 +291,13 @@ function CreateExamFromBank() {
               <h3 className="card-title" style={{marginBottom:0, border: 'none'}}>
                 Ngân hàng câu hỏi ({questions.length})
               </h3>
-              <div style={{fontWeight: 600, color: '#00b894'}}>
-                Đã chọn: {selectedIds.length}
+              <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+                {importedSource ? (
+                  <div style={{fontSize: 13, color: '#6b7280'}}>Nguồn import: {importedSource.fileName} — Khối {importedSource.grade} / {importedSource.subject}</div>
+                ) : null}
+                <div style={{fontWeight: 600, color: '#00b894', marginTop: 6}}>
+                  Đã chọn: {selectedIds.length}
+                </div>
               </div>
             </div>
 

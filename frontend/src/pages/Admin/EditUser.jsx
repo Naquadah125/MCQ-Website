@@ -5,9 +5,8 @@ const EditUser = ({ user, onSave, onCancel }) => {
   const [role, setRole] = useState(user.role || 'student');
   const [name, setName] = useState(user.name || '');
   const [email, setEmail] = useState(user.email || '');
-  const [fullName, setFullName] = useState((user.profile && user.profile.fullName) || user.name || '');
   const [phoneNumber, setPhoneNumber] = useState((user.profile && user.profile.phoneNumber) || '');
-    const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,12 +15,11 @@ const EditUser = ({ user, onSave, onCancel }) => {
       email,
       role,
       profile: {
-        fullName,
         phoneNumber
       }
-      };
-      if (password) {
-        payload.password = password;
+    };
+    if (password) {
+      payload.password = password;
     };
     onSave(user._id, payload);
   };
@@ -52,10 +50,6 @@ const EditUser = ({ user, onSave, onCancel }) => {
               <label htmlFor="password">Mật khẩu mới</label>
               <input id="password" placeholder="Nhập mật khẩu mới nếu muốn đổi" type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" />
             </div>
-          <div className="form-group">
-            <label htmlFor="fullName">Tên hiển thị (fullName)</label>
-            <input id="fullName" placeholder="Tên hiển thị" type="text" value={fullName} onChange={e => setFullName(e.target.value)} />
-          </div>
           <div className="form-group">
             <label htmlFor="phoneNumber">Số điện thoại</label>
             <input id="phoneNumber" placeholder="Số điện thoại" type="text" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />

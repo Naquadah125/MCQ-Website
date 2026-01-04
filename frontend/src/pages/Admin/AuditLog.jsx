@@ -38,7 +38,7 @@ function AuditLog() {
   return (
     <>
       <AdminNavbar />
-      <div className="create-user-container">
+      <div className="admin-container">
         <div className="table-card">
           <h2>Lịch sử hoạt động người dùng</h2>
           <div className="form-group" style={{ display: 'flex', gap: 16, marginBottom: 24, alignItems: 'center' }}>
@@ -71,13 +71,13 @@ function AuditLog() {
             </button>
           </div>
           <div style={{ overflowX: 'auto' }}>
-            <table className="audit-log-table">
+            <table className="users-table">
               <thead>
                 <tr>
-                  <th>Người dùng</th>
-                  <th>Hành động</th>
-                  <th>Thời gian</th>
-                  <th>Chi tiết</th>
+                  <th style={{ width: '20%' }}>Người dùng</th>
+                  <th style={{ width: '20%' }}>Hành động</th>
+                  <th style={{ width: '20%' }}>Thời gian</th>
+                  <th style={{ width: '40%' }}>Chi tiết</th>
                 </tr>
               </thead>
               <tbody>
