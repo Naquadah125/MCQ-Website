@@ -117,28 +117,26 @@
   border-radius: 6px;
   border: none;
   background-color: #00b894;
-  color: rgb(0, 0, 0);
+  color: #000;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 184, 148, 0.2);
+  transition: none;
+  /* simplified: no shadow for a cleaner look */
 }
 
 .btn-join:hover:not(.disabled) {
   background-color: #00a383;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 184, 148, 0.3);
 }
 
 .btn-join:active:not(.disabled) {
-  transform: translateY(0);
+  background-color: #008f73;
 }
 
 .btn-join.disabled {
   background-color: #cbd5e0;
   color: #718096;
   cursor: not-allowed;
-  box-shadow: none;
+  /* no shadow to keep disabled appearance simple */
 }
 
 .no-data {
@@ -154,7 +152,23 @@
 }
 
 .btn-view-result {
-  background-color: #3182ce !important;
+  padding: 6px 15px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: white !important;
+  color: #4a5568 !important;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+
+.btn-view-result:hover {
+  background-color: #edf2f7 !important;
+  border-color: #cbd5e0 !important;
+}
+
+.btn-view-result:active {
+  background-color: #e2e8f0 !important;
 }
 
 .row-completed {

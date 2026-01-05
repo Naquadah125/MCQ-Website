@@ -38,6 +38,26 @@ function AdminFeatures() {
             <button className="btn-settings" onClick={() => navigate('/admin/exams')}>SETTINGS</button>
           </div>
         </div>
+
+        <div className="feature-card">
+          <div className="card-body">
+            <h3>Lịch sử hoạt động</h3>
+            <p>Xem lịch sử thao tác của người dùng trên hệ thống.</p>
+          </div>
+          <div className="card-footer">
+            <button className="btn-settings" onClick={() => navigate('/admin/audit-log')}>SETTINGS</button>
+          </div>
+        </div>
+
+        <div className="feature-card">
+          <div className="card-body">
+            <h3>Quản lý ngân hàng câu hỏi</h3>
+            <p>Thêm, sửa, xóa và phân loại câu hỏi.</p>
+          </div>
+          <div className="card-footer">
+            <button className="btn-settings" onClick={() => navigate('/admin/question-bank')}>SETTINGS</button>
+          </div>
+        </div>
       </div>
     </div>
   );

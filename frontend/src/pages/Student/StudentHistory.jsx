@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import StudentNavbar from '../../components/StudentNavbar';
 import './StudentHistory.css';
 
 function StudentHistory() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('currentUser');
@@ -77,7 +79,7 @@ function StudentHistory() {
                       </span>
                     </td>
                     <td className="text-center">
-                      <button className="btn-detail-view" onClick={() => alert('Chức năng xem chi tiết đang phát triển')}>
+                      <button className="btn-detail-view" onClick={() => navigate(`/student/review/${res._id}`)}>
                         Xem lại
                       </button>
                     </td>

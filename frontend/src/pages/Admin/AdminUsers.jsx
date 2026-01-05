@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import AdminNavbar from '../../components/AdminNavbar';
 import './AdminUsers.css';
+import EditUser from './EditUser';
 
 function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -42,26 +44,36 @@ function AdminUsers() {
     }
   };
 
-  const handleResetPassword = async (id, userName) => {
-    const newPassword = window.prompt(`Nhập mật khẩu mới cho "${userName}" (để trống để hủy):`);
-    if (!newPassword) return;
+  const handleEditUser = (id, user) => {
+    setEditingUser({ ...user, _id: id });
+  };
+
+  const handleSaveEditUser = async (id, payload) => {
     try {
       const token = localStorage.getItem('token');
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const res = await fetch(`http://localhost:5001/api/admin/users/${id}/reset-password`, {
+      const res = await fetch(`http://localhost:5001/api/admin/users/${id}`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ password: newPassword })
+        body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error('Đặt lại mật khẩu thất bại');
 
-      alert('Đặt lại mật khẩu thành công!');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Cập nhật thất bại');
+
+      alert('Cập nhật người dùng thành công!');
+      setUsers(prev => prev.map(u => u._id === id ? { ...u, ...payload, profile: payload.profile } : u));
+      setEditingUser(null);
     } catch (err) {
       console.error(err);
-      alert('Không thể đặt lại mật khẩu');
+      alert('Không thể cập nhật người dùng');
     }
+  };
+
+  const handleCancelEditUser = () => {
+    setEditingUser(null);
   };
 
   const getRoleBadge = (role) => {
@@ -78,62 +90,69 @@ function AdminUsers() {
       <AdminNavbar />
       
       <div className="admin-container">
-        <div className="table-card">
-          <h2>Danh sách người dùng</h2>
-
-          {loading ? (
-            <p style={{ textAlign: 'center', color: '#6b7280' }}>Đang tải dữ liệu...</p>
-          ) : (
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '5%' }}>STT</th>
-                  <th style={{ width: '20%' }}>Họ và tên</th>
-                  <th style={{ width: '15%' }}>Email</th>
-                  <th style={{ width: '15%' }}>Ngày tạo</th>
-                  <th style={{ width: '10%' }}>Vai trò</th>
-                  <th style={{ width: '15%' }}>Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u, idx) => (
-                  <tr key={u._id}>
-                    <td>{idx + 1}</td>
-                    <td style={{ fontWeight: 600, color: '#111827' }}>{u.name}</td>
-                    <td>{u.email}</td>
-                    <td>{formatDate(u.createdAt)}</td>
-                    <td>{getRoleBadge(u.role)}</td>
-                    <td>
-                      <div className="action-buttons">
-                        <button 
-                          className="btn-action btn-reset" 
-                          onClick={() => handleResetPassword(u._id, u.name)}
-                          title="Đặt lại mật khẩu mới"
-                        >
-                          Đổi MK
-                        </button>
-                        <button 
-                          className="btn-action btn-delete" 
-                          onClick={() => handleDelete(u._id)}
-                          title="Xóa người dùng"
-                        >
-                          Xóa
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {users.length === 0 && (
+        {editingUser ? (
+          <EditUser
+            user={editingUser}
+            onSave={handleSaveEditUser}
+            onCancel={handleCancelEditUser}
+          />
+        ) : (
+          <div className="table-card">
+            <h2>Danh sách người dùng</h2>
+            {loading ? (
+              <p style={{ textAlign: 'center', color: '#6b7280' }}>Đang tải dữ liệu...</p>
+            ) : (
+              <table className="users-table">
+                <thead>
                   <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                      Chưa có người dùng nào được tạo.
-                    </td>
+                    <th style={{ width: '5%' }}>STT</th>
+                    <th style={{ width: '20%' }}>Họ và tên</th>
+                    <th style={{ width: '15%' }}>Email</th>
+                    <th style={{ width: '15%' }}>Ngày tạo</th>
+                    <th style={{ width: '10%' }}>Vai trò</th>
+                    <th style={{ width: '15%' }}>Hành động</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
+                </thead>
+                <tbody>
+                  {users.map((u, idx) => (
+                    <tr key={u._id}>
+                      <td>{idx + 1}</td>
+                      <td style={{ fontWeight: 600, color: '#111827' }}>{u.name}</td>
+                      <td>{u.email}</td>
+                      <td>{formatDate(u.createdAt)}</td>
+                      <td>{getRoleBadge(u.role)}</td>
+                      <td>
+                        <div className="action-buttons">
+                          <button 
+                            className="btn-action btn-reset" 
+                            onClick={() => handleEditUser(u._id, u)}
+                            title="Chỉnh sửa thông tin người dùng"
+                          >
+                            Sửa
+                          </button>
+                          <button 
+                            className="btn-action btn-delete" 
+                            onClick={() => handleDelete(u._id)}
+                            title="Xóa người dùng"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                        Chưa có người dùng nào được tạo.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

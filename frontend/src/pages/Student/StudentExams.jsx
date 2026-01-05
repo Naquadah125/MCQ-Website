@@ -48,6 +48,7 @@ function StudentExams() {
     const upcoming = [];
     const finished = [];
 
+
     filtered.forEach(ex => {
       // ƯU TIÊN: Nếu đã làm rồi, cho xuống nhóm "đã kết thúc/hoàn thành"
       if (ex.isCompleted) {
@@ -58,7 +59,21 @@ function StudentExams() {
       const start = new Date(ex.startTime);
       const end = new Date(ex.endTime);
 
-      if (now >= start && now <= end) ongoing.push({ ...ex, status: 'ongoing' });
+      // Nếu dữ liệu sai (start > end), vẫn xử lý đúng trạng thái
+      if (start > end) {
+        // start after end — treat as malformed but prioritize end: if current time past end => finished
+        if (now > end) {
+          finished.push({ ...ex, status: 'finished' });
+        } else if (now < start) {
+          upcoming.push({ ...ex, status: 'upcoming' });
+        } else {
+          // between end and start (rare) — mark finished for safety
+          finished.push({ ...ex, status: 'finished' });
+        }
+        return;
+      }
+
+      if (now >= start && now < end) ongoing.push({ ...ex, status: 'ongoing' });
       else if (now < start) upcoming.push({ ...ex, status: 'upcoming' });
       else finished.push({ ...ex, status: 'finished' });
     });

@@ -24,21 +24,18 @@ function TeacherExamHistory() {
   const fetchTeacherExams = async () => {
     setLoadingExams(true);
     try {
-      const res = await fetch('http://localhost:5001/api/exams');
-      const data = await res.json();
       const stored = localStorage.getItem('currentUser');
       const user = stored ? JSON.parse(stored) : null;
-      if (user) {
-        // Filter exams created by this teacher
-        const myExams = data.filter(e => {
-          // e.creator can be string id or object
-          const creatorId = e.creator && typeof e.creator === 'object' ? e.creator._id : e.creator;
-          return creatorId === (user.id || user._id);
-        });
-        setExams(myExams);
-      } else {
+      if (!user) {
         setExams([]);
+        setLoadingExams(false);
+        return;
       }
+
+      // Request exams for the authenticated teacher directly from the server
+      const res = await fetch(`http://localhost:5001/api/exams?creator=${user.id || user._id}`);
+      const data = await res.json();
+      setExams(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Lỗi khi lấy danh sách bài thi của giáo viên', err);
       setExams([]);
@@ -95,7 +92,10 @@ function TeacherExamHistory() {
                 <option key={ex._id} value={ex._id}>{ex.title} ({new Date(ex.startTime).toLocaleDateString('vi-VN')})</option>
               ))}
             </select>
-            <button className="btn-export" onClick={exportCSV} disabled={!results.length}>Export CSV</button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="btn-refresh" onClick={() => fetchResults(selectedExamId)} disabled={!selectedExamId}>Làm mới</button>
+              <button className="btn-export" onClick={exportCSV} disabled={!results.length}>Export CSV</button>
+            </div>
           </div>
         )}
 

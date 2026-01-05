@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import TeacherNavbar from '../../components/TeacherNavbar';
-import './CreateQuestion.css';
+import React, { useState, useEffect } from 'react';
+import AdminNavbar from '../../components/AdminNavbar';
+import '../Teacher/CreateQuestion.css';
 
-function CreateQuestion() {
+function AdminCreateQuestion() {
+  const query = new URLSearchParams(window.location.search);
+  const editId = query.get('id');
+
   const [formData, setFormData] = useState({
     subject: 'Toán',
     grade: '12',
@@ -17,27 +20,40 @@ function CreateQuestion() {
   });
   const [message, setMessage] = useState({ text: '', type: '' });
 
+  useEffect(() => {
+    if (editId) {
+      // load question
+      fetch(`/api/questions`) // we'll filter locally
+        .then(res => res.json())
+        .then(data => {
+          const q = data.find(x => x._id === editId);
+          if (q) {
+            setFormData({
+              subject: q.subject,
+              grade: q.grade,
+              difficulty: q.difficulty,
+              content: q.content,
+              optionA: q.options?.[0]?.text || '',
+              optionB: q.options?.[1]?.text || '',
+              optionC: q.options?.[2]?.text || '',
+              optionD: q.options?.[3]?.text || '',
+              correctAnswer: q.correctAnswer || 'A',
+              explanation: q.explanation || ''
+            });
+          }
+        })
+        .catch(err => console.error(err));
+    }
+  }, [editId]);
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage({ text: '', type: '' });
 
-    // Lấy thông tin user hiện tại để gán author
-    const storedUser = localStorage.getItem('currentUser');
-    const user = storedUser ? JSON.parse(storedUser) : null;
-
-    if (!user) {
-      setMessage({ text: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!', type: 'error' });
-      return;
-    }
-
-    // Chuẩn bị dữ liệu đúng format Backend yêu cầu
     const payload = {
       subject: formData.subject,
       grade: formData.grade,
@@ -50,45 +66,41 @@ function CreateQuestion() {
         { key: 'D', text: formData.optionD }
       ],
       correctAnswer: formData.correctAnswer,
-      explanation: formData.explanation,
-      author: user.id 
+      explanation: formData.explanation
     };
 
     try {
       const token = localStorage.getItem('token');
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
-      const response = await fetch('/api/questions', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload)
-      });
 
-      if (response.ok) {
-        setMessage({ text: 'Thêm câu hỏi thành công!', type: 'success' });
-        // Reset form (giữ lại môn và lớp để nhập tiếp)
-        setFormData({
-          ...formData,
-          content: '',
-          optionA: '', optionB: '', optionC: '', optionD: '',
-          explanation: ''
-        });
+      let res;
+      if (editId) {
+        res = await fetch(`/api/questions/${editId}`, { method: 'PUT', headers, body: JSON.stringify(payload) });
       } else {
-        const errorData = await response.json();
-        setMessage({ text: errorData.message || 'Lỗi khi lưu câu hỏi.', type: 'error' });
+        res = await fetch('/api/questions', { method: 'POST', headers, body: JSON.stringify(payload) });
+      }
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi');
+
+      setMessage({ text: editId ? 'Cập nhật thành công' : 'Thêm câu hỏi thành công!', type: 'success' });
+      if (!editId) {
+        setFormData({ ...formData, content: '', optionA: '', optionB: '', optionC: '', optionD: '', explanation: '' });
       }
     } catch (err) {
-      setMessage({ text: 'Không thể kết nối đến Server.', type: 'error' });
+      console.error(err);
+      setMessage({ text: err.message || 'Lỗi khi lưu câu hỏi', type: 'error' });
     }
   };
 
   return (
-    <div className="teacher-bg">
-      <TeacherNavbar />
+    <div className="admin-bg">
+      <AdminNavbar />
       <div className="create-question-container">
         <div className="question-form-card">
           <div className="form-header">
-            <h2>Tạo Câu Hỏi Mới</h2>
+            <h2>{editId ? 'Sửa câu hỏi' : 'Tạo Câu Hỏi Mới'}</h2>
             <p>Nhập chi tiết câu hỏi và đáp án bên dưới</p>
           </div>
 
@@ -124,32 +136,25 @@ function CreateQuestion() {
 
             <div className="form-group">
               <label>Nội dung câu hỏi</label>
-              <textarea 
-                id="content" 
-                rows="3" 
-                placeholder="Ví dụ: Công thức tính diện tích hình tròn là gì?" 
-                required
-                value={formData.content}
-                onChange={handleChange}
-              ></textarea>
+              <textarea id="content" rows="3" required value={formData.content} onChange={handleChange}></textarea>
             </div>
 
             <div className="options-grid">
               <div className="form-group">
                 <label>Đáp án A</label>
-                <input type="text" id="optionA" required value={formData.optionA} onChange={handleChange} placeholder="Nhập đáp án A..." />
+                <input type="text" id="optionA" required value={formData.optionA} onChange={handleChange} />
               </div>
               <div className="form-group">
                 <label>Đáp án B</label>
-                <input type="text" id="optionB" required value={formData.optionB} onChange={handleChange} placeholder="Nhập đáp án B..." />
+                <input type="text" id="optionB" required value={formData.optionB} onChange={handleChange} />
               </div>
               <div className="form-group">
                 <label>Đáp án C</label>
-                <input type="text" id="optionC" required value={formData.optionC} onChange={handleChange} placeholder="Nhập đáp án C..." />
+                <input type="text" id="optionC" required value={formData.optionC} onChange={handleChange} />
               </div>
               <div className="form-group">
                 <label>Đáp án D</label>
-                <input type="text" id="optionD" required value={formData.optionD} onChange={handleChange} placeholder="Nhập đáp án D..." />
+                <input type="text" id="optionD" required value={formData.optionD} onChange={handleChange} />
               </div>
             </div>
 
@@ -165,20 +170,14 @@ function CreateQuestion() {
 
             <div className="form-group">
               <label>Giải thích (Hint)</label>
-              <textarea 
-                id="explanation" 
-                rows="2" 
-                placeholder="Giải thích tại sao đáp án đó đúng (hiện khi học sinh làm sai)..."
-                value={formData.explanation}
-                onChange={handleChange}
-              ></textarea>
+              <textarea id="explanation" rows="2" value={formData.explanation} onChange={handleChange}></textarea>
             </div>
 
             {message.text && (
               <div className={`msg-box ${message.type}`}>{message.text}</div>
             )}
 
-            <button type="submit" className="btn-save-question">Lưu câu hỏi vào ngân hàng</button>
+            <button type="submit" className="btn-save-question">{editId ? 'Cập nhật' : 'Lưu câu hỏi vào ngân hàng'}</button>
           </form>
         </div>
       </div>
@@ -186,4 +185,4 @@ function CreateQuestion() {
   );
 }
 
-export default CreateQuestion;
+export default AdminCreateQuestion;

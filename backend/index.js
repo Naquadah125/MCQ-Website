@@ -11,7 +11,10 @@ const User = require('./models/User');
 const Profile = require('./models/Profile'); // MODEL MỚI
 const Question = require('./models/Question');
 const Exam = require('./models/Exam'); 
+
 const Result = require('./models/Result');
+// Audit Log
+const auditLogRoutes = require('./routes/auditLog');
 
 dotenv.config();
 
@@ -20,8 +23,12 @@ const PORT = process.env.PORT || 5001;
 
 connectDB();
 
+
 app.use(cors());
 app.use(express.json());
+
+// API Audit Log
+app.use('/api/audit-log', auditLogRoutes);
 
 // --- MIDDLEWARE XÁC THỰC (Dùng để lấy thông tin cá nhân an toàn) ---
 const authorize = (roles = []) => {
@@ -66,6 +73,20 @@ app.post('/api/auth/register', async (req, res) => {
         });
         await newProfile.save();
 
+        // Ghi log: đăng ký
+        try {
+          const AuditLog = require('./models/AuditLog');
+          const created = await AuditLog.create({
+            user: name || email,
+            action: 'Đăng ký',
+            detail: `Tạo tài khoản: ${name} (${email})`,
+            time: new Date()
+          });
+          console.log('[AuditLog] registered:', name || email);
+        } catch (e) {
+          console.error('[AuditLog] failed to record registration:', e);
+        }
+
         res.status(201).json({ message: 'Đăng ký tài khoản và hồ sơ thành công' });
     } catch (err) {
         res.status(500).json({ message: 'Lỗi server', error: err.message });
@@ -88,14 +109,48 @@ app.get('/api/profile/me', authorize(), async (req, res) => {
 // --- 3. CẬP NHẬT THÔNG TIN CÁ NHÂN ---
 app.put('/api/profile/me', authorize(), async (req, res) => {
     try {
-        const updates = req.body;
+        const updates = req.body || {};
+
+    // If client provided a top-level `name` or `fullName`, ensure the User.name
+    // is updated and normalize it to `fullName` for the Profile document.
+    if (updates.name || updates.fullName) {
+      const newName = updates.name || updates.fullName;
+      try {
+        await User.findByIdAndUpdate(req.user.id, { $set: { name: newName } });
+      } catch (e) {
+        console.error('Failed to update user name:', e);
+        return res.status(500).json({ message: 'Lỗi khi cập nhật tên người dùng' });
+      }
+      updates.fullName = newName;
+      delete updates.name; // keep profile field consistent
+    }
+
+    // Những trường không cho phép cập nhật từ client qua trang chỉnh sửa này
+    const forbidden = ['address', 'bio', 'studentId', 'class'];
+    forbidden.forEach(f => delete updates[f]);
+
+        // Nếu gửi password mới thì cập nhật vào User (hash trước khi lưu)
+        if (updates.password) {
+            try {
+                const salt = await bcrypt.genSalt(10);
+                const hashed = await bcrypt.hash(updates.password, salt);
+                await User.findByIdAndUpdate(req.user.id, { $set: { password: hashed } });
+                // remove password so it won't be saved into Profile
+                delete updates.password;
+            } catch (e) {
+                console.error('Failed to update password:', e);
+                return res.status(500).json({ message: 'Lỗi khi cập nhật mật khẩu' });
+            }
+        }
+
         const profile = await Profile.findOneAndUpdate(
             { user: req.user.id },
             { $set: updates },
-            { new: true }
+            { new: true, upsert: true }
         );
         res.json({ message: 'Cập nhật thành công', profile });
     } catch (err) {
+        console.error('Profile update failed:', err);
         res.status(500).json({ message: 'Lỗi cập nhật hồ sơ' });
     }
 });
@@ -110,6 +165,23 @@ app.post('/api/auth/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Mật khẩu không đúng' });
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'secretkey', { expiresIn: '1d' });
+
+    // Ghi log hoạt động nếu không phải admin
+    if (user.role !== 'admin') {
+      try {
+        const AuditLog = require('./models/AuditLog');
+        const created = await AuditLog.create({
+          user: user.name,
+          action: 'Đăng nhập',
+          detail: `Người dùng đăng nhập vào hệ thống`,
+          time: new Date()
+        });
+        console.log('[AuditLog] login recorded for user:', user.name, 'id:', user._id);
+      } catch (e) {
+        console.error('[AuditLog] failed to record login:', e);
+      }
+    }
+
     res.json({
       token,
       user: { id: user._id, name: user.name, email: user.email, role: user.role }
@@ -120,13 +192,59 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // --- QUẢN LÝ CÂU HỎI & KỲ THI (Giữ nguyên của bạn) ---
-app.post('/api/questions', async (req, res) => {
+app.post('/api/questions', authorize(['teacher','admin']), async (req, res) => {
   try {
-    const newQuestion = new Question(req.body);
+    const payload = req.body;
+    const newQuestion = new Question(payload);
     const savedQuestion = await newQuestion.save();
+
+    // Audit log
+    try {
+      const AuditLog = require('./models/AuditLog');
+      const user = req.user && req.user.id ? await User.findById(req.user.id) : null;
+      await AuditLog.create({ user: user ? user.name : 'Unknown', action: 'Tạo câu hỏi', detail: `Tạo câu hỏi: ${savedQuestion._id}`, time: new Date() });
+      console.log('[AuditLog] question created by', user ? user.name : 'Unknown');
+    } catch (e) { console.error('[AuditLog] failed to log question create', e); }
+
     res.status(201).json(savedQuestion);
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi tạo câu hỏi', error: err.message });
+  }
+});
+
+app.put('/api/questions/:id', authorize(['teacher','admin']), async (req, res) => {
+  try {
+    const updated = await Question.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+    if (!updated) return res.status(404).json({ message: 'Không tìm thấy câu hỏi' });
+
+    try {
+      const AuditLog = require('./models/AuditLog');
+      const user = req.user && req.user.id ? await User.findById(req.user.id) : null;
+      await AuditLog.create({ user: user ? user.name : 'Unknown', action: 'Cập nhật câu hỏi', detail: `Cập nhật câu hỏi: ${updated._id}`, time: new Date() });
+      console.log('[AuditLog] question updated by', user ? user.name : 'Unknown');
+    } catch (e) { console.error('[AuditLog] failed to log question update', e); }
+
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi cập nhật câu hỏi', error: err.message });
+  }
+});
+
+app.delete('/api/questions/:id', authorize(['teacher','admin']), async (req, res) => {
+  try {
+    const deleted = await Question.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: 'Không tìm thấy câu hỏi' });
+
+    try {
+      const AuditLog = require('./models/AuditLog');
+      const user = req.user && req.user.id ? await User.findById(req.user.id) : null;
+      await AuditLog.create({ user: user ? user.name : 'Unknown', action: 'Xóa câu hỏi', detail: `Xóa câu hỏi: ${deleted._id}`, time: new Date() });
+      console.log('[AuditLog] question deleted by', user ? user.name : 'Unknown');
+    } catch (e) { console.error('[AuditLog] failed to log question delete', e); }
+
+    res.json({ message: 'Xóa câu hỏi thành công' });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi xóa câu hỏi', error: err.message });
   }
 });
 
@@ -190,6 +308,22 @@ app.post('/api/exams', authorize(['teacher','admin']), async (req, res) => {
       questions: examQuestions
     });
     await newExam.save();
+
+    // Ghi log hoạt động
+    try {
+      const AuditLog = require('./models/AuditLog');
+      const user = req.user && req.user.id ? await User.findById(req.user.id) : null;
+      const created = await AuditLog.create({
+        user: user ? user.name : 'Unknown',
+        action: 'Tạo bài thi',
+        detail: `Tạo bài thi: ${title}`,
+        time: new Date()
+      });
+      console.log('[AuditLog] exam created by:', user ? user.name : 'Unknown', 'exam:', newExam._id);
+    } catch (e) {
+      console.error('[AuditLog] failed to record exam creation:', e);
+    }
+
     res.status(201).json({ message: 'Tạo bài thi thành công!', examId: newExam._id });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi tạo bài thi', error: err.message });
@@ -198,12 +332,13 @@ app.post('/api/exams', authorize(['teacher','admin']), async (req, res) => {
 
 app.get('/api/exams', async (req, res) => {
   try {
-    const { subject, grade, status, title } = req.query;
+    const { subject, grade, status, title, creator } = req.query;
     let filter = {};
     if (subject) filter.subject = subject;
     if (grade) filter.grade = grade;
     if (status) filter.status = status;
     if (title) filter.title = { $regex: title, $options: 'i' };
+    if (creator) filter.creator = creator; // allow filtering by creator id (useful for teacher history)
 
     const exams = await Exam.find(filter).sort({ startTime: 1 });
     res.json(exams);
@@ -299,6 +434,23 @@ app.post('/api/results/submit', async (req, res) => {
     });
 
     await newResult.save();
+
+    // Ghi log: tham gia / nộp bài thi
+    try {
+      const AuditLog = require('./models/AuditLog');
+      const studentUser = studentId ? await User.findById(studentId) : null;
+      const examTitle = exam ? (exam.title || String(exam._id)) : examId;
+      await AuditLog.create({
+        user: studentUser ? studentUser.name : (studentId || 'Unknown'),
+        action: 'Tham gia thi',
+        detail: `Nộp bài: ${examTitle}, Điểm: ${Number(score.toFixed(2))}`,
+        time: new Date()
+      });
+      console.log('[AuditLog] exam submitted by:', studentUser ? studentUser.name : studentId, 'exam:', examTitle);
+    } catch (e) {
+      console.error('[AuditLog] failed to record exam submission:', e);
+    }
+
     res.status(201).json({ message: 'Nộp bài thành công', score: newResult.score });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi server khi lưu kết quả' });
@@ -309,11 +461,23 @@ app.get('/api/results/student/:studentId', async (req, res) => {
   try {
     const studentId = req.params.studentId;
     const results = await Result.find({ student: studentId })
-      .populate('exam', 'title')
+      .populate('exam', 'title durationMinutes')
       .sort({ completedAt: -1 });
     res.json(results);
   } catch (err) {
     res.status(500).json({ message: 'Lỗi lấy dữ liệu' });
+  }
+});
+
+// Get single result by id (include full exam details for review)
+app.get('/api/results/:id', async (req, res) => {
+  try {
+    const resultId = req.params.id;
+    const result = await Result.findById(resultId).populate('exam');
+    if (!result) return res.status(404).json({ message: 'Không tìm thấy kết quả' });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy kết quả' });
   }
 });
 
@@ -372,6 +536,72 @@ app.delete('/api/admin/users/:id', authorize(['admin']), async (req, res) => {
     res.json({ message: 'Xóa người dùng thành công' });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi xóa người dùng' });
+  }
+});
+
+// --- CẬP NHẬT THÔNG TIN NGƯỜI DÙNG (Admin) ---
+app.put('/api/admin/users/:id', authorize(['admin']), async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { name, email, role, profile } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+
+    // Nếu đổi email, kiểm tra trùng
+    if (email && email !== user.email) {
+      const exists = await User.findOne({ email });
+      if (exists) return res.status(400).json({ message: 'Email đã được sử dụng bởi tài khoản khác' });
+    }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (role) user.role = role;
+
+    // Nếu gửi password trong payload, cập nhật mật khẩu (hash trước khi lưu)
+    if (req.body.password) {
+      try {
+        const salt = await bcrypt.genSalt(10);
+        const hashed = await bcrypt.hash(req.body.password, salt);
+        user.password = hashed;
+      } catch (e) {
+        console.error('Failed to hash password for admin update:', e);
+        return res.status(500).json({ message: 'Lỗi khi cập nhật mật khẩu' });
+      }
+    }
+
+    await user.save();
+
+    // Cập nhật hoặc tạo profile liên quan
+    let profileDoc = await Profile.findOne({ user: user._id });
+    if (!profileDoc) {
+      profileDoc = new Profile({ user: user._id, fullName: (profile && profile.fullName) ? profile.fullName : user.name, ...(profile || {}) });
+    } else if (profile && typeof profile === 'object') {
+      Object.keys(profile).forEach(k => {
+        profileDoc[k] = profile[k];
+      });
+    }
+    profileDoc.updatedAt = Date.now();
+    await profileDoc.save();
+
+    // Ghi log hoạt động
+    try {
+      const AuditLog = require('./models/AuditLog');
+      const adminUser = req.user && req.user.id ? await User.findById(req.user.id) : null;
+      const created = await AuditLog.create({
+        user: adminUser ? adminUser.name : 'Admin',
+        action: 'Cập nhật user',
+        detail: `Cập nhật thông tin user: ${user.name} (${user.email})`,
+        time: new Date()
+      });
+      console.log('[AuditLog] user updated by:', adminUser ? adminUser.name : 'Admin', 'target:', user.email);
+    } catch (e) {
+      console.error('[AuditLog] failed to record user update:', e);
+    }
+
+    res.json({ message: 'Cập nhật người dùng thành công', user: { id: user._id, name: user.name, email: user.email, role: user.role }, profile: profileDoc });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi cập nhật người dùng', error: err.message });
   }
 });
 

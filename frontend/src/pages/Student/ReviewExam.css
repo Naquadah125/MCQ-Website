@@ -1,0 +1,20 @@
+.option-item.correct {
+  border-color: #065f46;
+  background: #ecfdf5;
+}
+
+.option-item.wrong {
+  border-color: #f87171;
+  background: #fff5f5;
+}
+
+.nav-item.selected {
+  outline: 2px solid #00b894;
+  transform: translateY(-2px);
+}
+
+/* small tweaks to fit read-only view */
+.option-item .label-note {
+  font-size: 12px;
+  color: #666;
+}
