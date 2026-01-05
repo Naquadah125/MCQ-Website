@@ -3,7 +3,11 @@ const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
+<<<<<<< HEAD
 const User = require('./models/user');
+=======
+const User = require('./models/User');
+>>>>>>> a8d26e5b505f702abcead44818bff9251ca45ea6
 const Question = require('./models/Question');
 const Exam = require('./models/Exam');
 const Result = require('./models/Result');
