@@ -1,53 +1,53 @@
-npm install
-npm run dev
+# Setup dự án Backend
 
-Reset db
+## Cấu hình:
+npm install
+cp .env.example .env
+
+# Lưu ý: Mở file .env và chỉnh sửa nội dung như sau để khớp với Frontend:
+# PORT=5001
+# MONGO_URI=mongodb://localhost:27017/exam_management_db
+# JWT_SECRET=secret_key_bat_ky
+
+npm run dev
+# (Lệnh trên dùng để chạy mode development, tự động reset khi sửa code)
+
+## Reset Database
 npm run seed
 
-admin:
-admin@test.com
-123
+## Các nhánh trong dự án:
+main     : Nhánh chính, dùng để tổng hợp lại và để nộp bài.
+frontend : Nhánh làm giao diện (UI - ReactJS).
+backend  : Nhánh xử lý logic + database (NodeJS - Bạn ở đây).
 
-test chức năng: 
-- **Đăng ký / Đăng nhập**
-  - Đăng ký tài khoản **student** và **teacher** (UI + API) và đăng nhập thành công
-  - Đăng nhập bằng tài khoản **admin**, **teacher**, **student**
+## Hướng dẫn làm việc với nhánh backend
 
-- **Student**:
-  - Tham gia bài thi (vào kỳ thi đang diễn ra), nộp bài, xử lý hết giờ tự động
-  - Xem **Lịch sử** và **Xem lại** bài thi (review result)
-  - Kiểm tra giao diện khi chưa có kỳ thi hoặc khi đã hoàn thành
+1. Chuyển nhánh:
 
-- **Teacher**:
-  - Tạo câu hỏi thủ công và bằng **Import (CSV / XLSX)**, kiểm tra validation (môn/khối đồng nhất)
-  - Tạo kỳ thi từ ngân hàng (hoặc từ bộ import), kiểm tra auto-prefill subject/grade
-  - Mở **Lịch sử bài thi** (select phải hiển thị các exam của teacher), thử export CSV
-  - Kiểm tra tính năng tạo đề ngẫu nhiên (nếu đã triển khai)
+git checkout backend
 
-- **Admin**:
-  - Tạo / sửa / xóa tài khoản student/teacher, đổi role
-  - Kiểm tra **Audit Log** hiển thị đúng các hành động (đăng nhập, tạo/xóa câu hỏi, tạo/xóa exam)
+Kiểm tra nhánh hiện tại:
+git branch
 
-- **Seed & kiểm tra dữ liệu**:
-  - Chạy `npm run seed` để tạo dữ liệu demo (3 exams: upcoming/ongoing/finished, demo teacher/student)
-  - Xác nhận các user demo tồn tại: `admin@test.com` (123), `teacher@test.com` (123), `student@test.com` (123)
+Dấu * phải nằm bên cạnh backend.
+
+2. Quy trình:
+
+Lấy code mới nhất từ GitHub:
+git pull origin backend
+
+Push lên nhánh backend:
+git add .
+git commit -m "Mô tả tính năng vừa làm"
+git push origin backend
+
+Khi cần cập nhật code từ nhánh main:
+git checkout main
+git pull origin main
+
+git checkout backend
+git merge main
 
 
-để chạy backend(terminal riêng)
-
----
-
-## Environment variables ✅
-
-Copy `backend/.env.example` to the project root as `.env` (the backend loads environment variables from `../.env`).
-
-Example `.env` values:
-
-```
-PORT=5001
-MONGODB_URI=mongodb://localhost:27017/mcq_db
-JWT_SECRET=your_jwt_secret_here
-NODE_ENV=development
-```
-
-Keep `JWT_SECRET` secret in production and replace `MONGODB_URI` with your hosted database URI.
+## Caution
+Nếu có báo conflict -> Nhắn tui để xử lý
