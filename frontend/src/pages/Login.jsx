@@ -109,7 +109,7 @@ function Login() {
           {error && <div style={{color: 'red', marginBottom: '10px', fontSize: '14px'}}>{error}</div>}
 
           <button type="submit" className="btn-submit">
-            Đăng nhập ({role})
+            Đăng nhập
           </button>
         </form>
 

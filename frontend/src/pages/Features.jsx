@@ -21,7 +21,7 @@ function Features() {
             soạn thảo thông minh, bạn có thể tạo bài kiểm tra trắc nghiệm chỉ trong vài phút.
           </p>
           <ul className="feature-list">
-            <li>Hỗ trợ nhập từ File Word/Excel</li>
+            <li>Hỗ trợ nhập từ File Excel</li>
             <li>Trộn câu hỏi tự động</li>
           </ul>
         </div>
@@ -32,22 +32,6 @@ function Features() {
 
       <section className="feature-block reverse">
         <div className="feature-text">
-          <div className="icon-wrapper icon-purple"></div>
-          <h2>Tổ chức thi đấu trực tiếp</h2>
-          <p>
-            Biến giờ kiểm tra căng thẳng thành trò chơi thú vị.
-          </p>
-          <ul className="feature-list">
-            <li>Bảng xếp hạng thời gian thực</li>
-          </ul>
-        </div>
-        <div className="feature-image">
-          <img src="https://img.freepik.com/free-vector/gamification-concept-illustration_114360-26462.jpg" alt="Thi đấu trực tiếp" />
-        </div>
-      </section>
-
-      <section className="feature-block">
-        <div className="feature-text">
           <div className="icon-wrapper icon-green"></div>
           <h2>Báo cáo kết quả chi tiết</h2>
           <p>
@@ -57,7 +41,7 @@ function Features() {
           <ul className="feature-list">
             <li>Phổ điểm chi tiết từng câu</li>
             <li>Lưu trữ lịch sử làm bài</li>
-            <li>Xuất báo cáo ra file Excel/PDF</li>
+            <li>Xuất báo cáo ra file Excel</li>
           </ul>
         </div>
         <div className="feature-image">

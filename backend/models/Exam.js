@@ -9,7 +9,6 @@ const ExamSchema = new mongoose.Schema({
   durationMinutes: { type: Number },
   passMark: { type: Number, default: 5 },
   randomizeQuestions: { type: Boolean, default: false },
-  showAnswersAfterExam: { type: Boolean, default: false },
   status: { type: String, enum: ['Đang diễn ra','Đã kết thúc'], default: 'Đang diễn ra' },
   startTime: { type: Date, required: true },
   endTime: { type: Date, required: true },

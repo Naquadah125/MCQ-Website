@@ -20,6 +20,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import TeacherCreateSelection from './pages/Teacher/TeacherCreateSelection';
 import CreateQuestion from './pages/Teacher/CreateQuestion';
 import CreateExamFromBank from './pages/Teacher/CreateExamFromBank';
+import CreateRandomExam from './pages/Teacher/CreateRandomExam';
 import ImportQuestions from './pages/Teacher/ImportQuestions';
 import TeacherOrganizeSelection from './pages/Teacher/TeacherOrganizeSelection';
 import TeacherExamHistory from './pages/Teacher/TeacherExamHistory';
@@ -77,7 +78,7 @@ function App() {
         <Route path="/teacher/import" element={<ProtectedRoute allowedRole="teacher"><ImportQuestions /></ProtectedRoute>} />
         <Route path="/teacher/create" element={<ProtectedRoute allowedRole="teacher"><TeacherCreateSelection /></ProtectedRoute>} />
         <Route path="/teacher/create-question" element={<ProtectedRoute allowedRole="teacher"><CreateQuestion /></ProtectedRoute>} />
-        <Route path="/teacher/create-exam" element={<ProtectedRoute allowedRole="teacher"><TeacherPlaceholder title="Tạo Bài Thi" /></ProtectedRoute>} />
+        <Route path="/teacher/create-exam" element={<ProtectedRoute allowedRole="teacher"><CreateRandomExam /></ProtectedRoute>} />
         <Route path="/teacher/history" element={<ProtectedRoute allowedRole="teacher"><TeacherExamHistory /></ProtectedRoute>} />
         <Route path="/teacher/profile-edit" element={<ProtectedRoute allowedRole="teacher"><ProfileEdit /></ProtectedRoute>} />
 

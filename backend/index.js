@@ -266,7 +266,7 @@ app.post('/api/exams', authorize(['teacher','admin']), async (req, res) => {
   try {
     // Force creator to be the authenticated user for security
     const creatorId = req.user && req.user.id ? req.user.id : req.body.creator;
-    const { title, description, startTime, endTime, questionIds, questions: providedQuestions, subject, grade, durationMinutes, passMark, randomizeQuestions, showAnswersAfterExam, status } = req.body;
+    const { title, description, startTime, endTime, questionIds, questions: providedQuestions, subject, grade, durationMinutes, passMark, randomizeQuestions, status } = req.body;
 
     let examQuestions = [];
 
@@ -301,7 +301,6 @@ app.post('/api/exams', authorize(['teacher','admin']), async (req, res) => {
       durationMinutes,
       passMark,
       randomizeQuestions,
-      showAnswersAfterExam,
       status,
       startTime,
       endTime,
@@ -503,7 +502,8 @@ app.get('/api/teacher/stats', async (req, res) => {
 // Thống kê admin (Tổng người dùng / theo role / tổng bài thi)
 app.get('/api/admin/stats', async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
+    // Do not count admin accounts in the total users stat
+    const totalUsers = await User.countDocuments({ role: { $ne: 'admin' } });
     const totalTeachers = await User.countDocuments({ role: 'teacher' });
     const totalStudents = await User.countDocuments({ role: 'student' });
     const totalExams = await Exam.countDocuments();

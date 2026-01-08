@@ -23,8 +23,7 @@ function CreateExamFromBank() {
     passMark: 5,
     startTime: '',
     endTime: '',
-    randomizeQuestions: false,
-    showAnswersAfterExam: false
+    randomizeQuestions: false
   });
 
   useEffect(() => {
@@ -269,14 +268,6 @@ function CreateExamFromBank() {
                   onChange={e => setExamInfo({...examInfo, randomizeQuestions: e.target.checked})} 
                 /> 
                 Đảo ngẫu nhiên câu hỏi
-              </label>
-              <label className="checkbox-label">
-                <input 
-                  type="checkbox" 
-                  checked={examInfo.showAnswersAfterExam} 
-                  onChange={e => setExamInfo({...examInfo, showAnswersAfterExam: e.target.checked})} 
-                /> 
-                Hiển thị đáp án sau khi nộp
               </label>
             </div>
 
